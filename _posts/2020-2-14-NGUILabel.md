@@ -19,7 +19,7 @@ author: LiXiao
 
 设置如图   
 
-![设置]({{site.url}}/assets/NGUItext.png) 
+![设置]({{ "/assets/NGUItext.png" | relative_url }}) 
 
 ``` 
 using System;
@@ -108,5 +108,4 @@ public class ScrollLabelNew : MonoBehaviour
 ```
 
 ## 效果    
-
-![创建shader菜单]({{site.url}}/assets/Feb-24-2020-21-10-04.gif) 
+![创建shader菜单]({{ "/assets/Feb-24-2020-21-10-04.gif" | relative_url }}) 
