@@ -2,7 +2,7 @@
 layout: post
 title: "NGUILabel走马灯"
 categories: [NGUI]
-tags: [NGUI,走马灯]
+tags: [NGUI]
 author: LiXiao
 ---
 
