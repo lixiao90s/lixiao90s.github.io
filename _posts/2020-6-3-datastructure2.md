@@ -177,3 +177,117 @@ public void Reverse()
         head.next=reverseHead.next;
     }
 ```
+
+## 双向链表
+
+双向链表是单链表扩展出来的结构，很多操作相同。
+例如获取长度，查找元素。由于多了一个指向前驱元素的指针，在添加和删除时，向对于单链表会增加对前驱指针的操作。
+
+
+与单向链表对比
+- 单项链表，查找方向只能是一个方向，双向链表可以向前或者向后查找
+- 单项链表不能自我删除，需要辅助接点，而双向链表，则可以自我删除（单向链表
+删除时总是需要一个辅助节点，这个节点是待删除节点的前一个节点）
+- 多存储了一个指针，内存消耗增加。
+
+## 环形链表
+ 
+### 创建
+
+- 借助辅助指针first ，记录第一个节点，只有一个节点时，自己指向自己，形成闭环
+- cur记录最后一次添加的节点，cur指向新增节点，新增节点next指向first
+
+``` java
+//添加节点
+    public void Add(CNode cNode)
+    {
+        if(first==null)
+        {
+            first = cNode;
+            first.next=first;
+        }
+        //将最后一个添加的节点后继指向新节点
+        if(cur != null)
+        {
+            cur.next=cNode;
+        }
+
+        //形成闭环
+        cNode.next=first;
+        //记录节点
+        cur=cNode;
+
+    }
+```
+
+### 遍历环形链表
+
+``` java
+public void List()
+    {
+        //空表
+        if(first==null)
+        {
+            return;
+        }
+        CNode tmp = first;
+        while (true)
+        {
+            tmp.ToString();
+            if(tmp.next==first)
+            {
+                break;
+            }
+            tmp=tmp.next;
+        }
+    }
+```
+
+### 约瑟夫问题
+helper 类似于单链表删除节点时辅助节点，first指向需要删除节点，helper用于删除和判断循环结束条件
+
+``` java
+/**
+     * 约瑟夫问题
+     * @param k 起始位置
+     * @param m 间隔
+     */
+    public void JosePhu(int k,int m)
+    {
+        //helper始终first的前一个元素
+        CNode helper=first;
+        while (true)
+        {
+            //定位helper
+            //只有一个元素时first == helper
+            if(helper.next==first)
+            {
+                break;
+            }
+            helper=helper.next;
+        }
+        //定位helper和first初始位置，从第k个开始,需要移动k-1次
+        for(int i=1;i<=k-1;i++)
+        {
+            helper=helper.next;
+            first=first.next;
+        }
+        //开始做出队处理，直到只剩下一个元素
+        while(true)
+        {
+            if(helper==first)
+            {
+                helper.ToString();
+                break;
+            }
+            for(int j=1;j<=m-1;j++)
+            {
+                helper=helper.next;
+                first=first.next;
+            }
+            first.ToString();
+            first = first.next;
+            helper.next=first;
+        }
+    }
+```
