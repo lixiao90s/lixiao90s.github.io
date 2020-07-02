@@ -384,7 +384,7 @@ n表示二叉树的第几个元素（从0开始)
 
 ### 线索化二叉树以及遍历线索化二叉树
 
-![顺序存储二叉树]({{ "/assets/img/sample/threadedTree.png" | relative_url }}) 
+![线索化二叉树]({{ "/assets/img/sample/threadedTree.png" | relative_url }}) 
 
 ``` java
 package com.learn.tree;
