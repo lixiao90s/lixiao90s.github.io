@@ -1,7 +1,7 @@
 ---
 title: 树
 author: 晓
-date: 2020-6-19 11:16:00 +0800
+date: 2020-6-18 11:16:00 +0800
 categories: [DataStructure]
 tags: [tree]
 --- 
