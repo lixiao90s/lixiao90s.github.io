@@ -1,9 +1,9 @@
 ---
 title: 树
 author: 晓
-date: 2020-6-15 11:16:00 +0800
+date: 2020-6-19 11:16:00 +0800
 categories: [DataStructure]
-tags: [tree,java]
+tags: [tree]
 --- 
 
 ## 树与数组链表的比较
