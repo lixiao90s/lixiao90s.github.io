@@ -1,0 +1,217 @@
+I"jH<p>本文内容主要参考 《Unity shader入门精要》一书，旨在总结所学知识与加深个人理解</p>
+
+<h2 id="凹凸映射">凹凸映射</h2>
+<p>使用一张纹理来修改模型表面的法线，为模型提供更多细节。</p>
+
+<h3 id="使用法线纹理进行凹凸映射">使用法线纹理进行凹凸映射</h3>
+
+<p>法线方向的分量范围在[-1,1],像素分量范围为[0,1],法线到像素的映射 $pixel = \frac{normal+1}{2}$.
+我们在shader中对法线纹理采样后，需要进行反映射 $normal=pixel\ast 2-1$。</p>
+
+<h3 id="模型空间的法线纹理object-space-normal-map">模型空间的法线纹理(object-space normal map)</h3>
+<p>定义：模型空间中的表面法线存储在一张纹理中。
+优点：</p>
+<ul>
+  <li>实现简单，直观。</li>
+  <li>纹理坐标缝合处和尖锐的边角部分，课件突变较少，可以提供平滑的边界。</li>
+</ul>
+
+<h3 id="切线空间的法线纹理tangent-space-normal-map">切线空间的法线纹理(tangent-space normal map)</h3>
+<p>定义: 模型定点的切线空间来存储法线，对于模型的每个定点，它都有一个属于自己的切线空间，这个切线空间的原点就是该顶点本身，
+而z轴是顶点的法线方向（n）,x轴是顶点的切线方向（t）,而y轴可由法线和切线叉积而得，也被称为副切线。</p>
+
+<p><img src="/assets/img/sample/ts-normal-map.png" alt="切线空间法线纹理" /></p>
+
+<p>优点:</p>
+<ul>
+  <li>自由度高。模型空间下的法线纹理记录的是绝对法线信息，仅可用于创建它时的那个模型。切线空间下的纹理记录的是相对法线信息，
+意味着，把纹理应用到完全不同的网格上，也可以得到合理结果。</li>
+  <li>可进行UV动画。我们可以移动一个纹理的UV坐标来实现凹凸移动的效果，但使用模型空间下的法线纹理得到完全错误的结果。这种UV动画在水
+或者火山熔岩。</li>
+  <li>可以重用法线纹理。</li>
+  <li>可压缩。</li>
+</ul>
+
+<h3 id="在切线空间下计算光照模型">在切线空间下计算光照模型</h3>
+<p>实现：在片元着色器中通过纹理采样得到切线空间的法线，然后在于切线空间下的视角方向，光照方向等进行计算。
+需要在顶点着色器中把视角方向，光照方向从来模型空间变换到切线空间中。即我们需要知道的从模型空间到切线空间的变换
+矩阵。这个变换矩阵的逆矩阵，在顶点着色器中按切线（x轴），副切线（y轴），法线（z轴）的顺序按列排列。在UnityCG.cginc中
+定义了TANGENT_SPACE_ROTATION</p>
+
+<h3 id="实现">实现</h3>
+<p>_BumpMap,使用”bump”作为它的默认值。”bump”是Unity内置法线纹理，当没有提供任何法线纹理时，bump对应模型自带法线信息。
+_BmupScale 控制凹凸程度，0 则意味该法线纹理不会对光照产生任何影响。
+tangent.w 分量决定切线空间中的第三个坐标轴-副切线的方向性。
+法线纹理中存储的是把法线经过映射后得到的像素值，因此需要把他们反映射出来。</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+</pre></td><td class="rouge-code"><pre><span class="n">Shader</span> <span class="s">"Practice/NormalMapTagSpace"</span>
+<span class="p">{</span>
+    <span class="n">Properties</span>
+    <span class="p">{</span>
+        <span class="n">_Color</span><span class="p">(</span><span class="s">"Color Tint"</span><span class="p">,</span><span class="n">Color</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span><span class="c1">// 漫反射颜色</span>
+        <span class="n">_MainTex</span> <span class="p">(</span><span class="s">"Main Tex"</span><span class="p">,</span> <span class="mi">2</span><span class="n">D</span><span class="p">)</span> <span class="o">=</span> <span class="s">"white"</span> <span class="p">{}</span><span class="c1">//贴图</span>
+        <span class="n">_BumpMap</span><span class="p">(</span><span class="s">"Bump Map"</span><span class="p">,</span><span class="mi">2</span><span class="n">D</span><span class="p">)</span> <span class="o">=</span> <span class="s">"bump"</span> <span class="p">{}</span><span class="c1">//法线贴图</span>
+        <span class="n">_BumpScale</span><span class="p">(</span><span class="s">"Bump Scale"</span><span class="p">,</span><span class="kt">float</span><span class="p">)</span> <span class="o">=</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="c1">//凹凸程度</span>
+        <span class="n">_Specular</span><span class="p">(</span><span class="s">"Specular"</span><span class="p">,</span><span class="n">Color</span><span class="p">)</span><span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span><span class="c1">//高光颜色</span>
+        <span class="n">_Gloss</span><span class="p">(</span><span class="s">"Gloss"</span><span class="p">,</span><span class="n">Range</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span><span class="mi">256</span><span class="p">))</span> <span class="o">=</span> <span class="mi">20</span> <span class="c1">//光泽度</span>
+    <span class="p">}</span>
+    <span class="n">SubShader</span>
+    <span class="p">{</span>
+        <span class="n">Pass</span><span class="p">{</span>
+            <span class="n">Tags</span> <span class="p">{</span> <span class="s">"LightModel"</span> <span class="o">=</span> <span class="s">"ForwardBase"</span> <span class="p">}</span>
+            <span class="n">CGPROGRAM</span>
+            <span class="cp">#pragma vertex vert
+</span>            <span class="cp">#pragma fragment frag
+</span>            <span class="cp">#include "Lighting.cginc"
+</span>
+            <span class="n">fixed4</span> <span class="n">_Color</span><span class="p">;</span>
+            <span class="n">sampler2D</span> <span class="n">_MainTex</span><span class="p">;</span>
+            <span class="n">sampler2D</span> <span class="n">_BumpMap</span><span class="p">;</span><span class="c1">//法线纹理</span>
+            <span class="n">float4</span> <span class="n">_MainTex_ST</span><span class="p">;</span>
+            <span class="n">float4</span> <span class="n">_BumpMap_ST</span><span class="p">;</span><span class="c1">//法线纹理属性</span>
+            <span class="n">fixed4</span> <span class="n">_Specular</span><span class="p">;</span>
+            <span class="kt">float</span> <span class="n">_Gloss</span><span class="p">;</span>
+            <span class="kt">float</span> <span class="n">_BumpScale</span><span class="p">;</span><span class="c1">//凹凸程度</span>
+
+            <span class="k">struct</span> <span class="n">a2v</span><span class="p">{</span>
+                <span class="n">float4</span> <span class="n">vertex</span><span class="o">:</span><span class="n">POSITION</span><span class="p">;</span> <span class="c1">//模型顶点信息</span>
+                <span class="n">float3</span> <span class="n">normal</span><span class="o">:</span><span class="n">NORMAL</span><span class="p">;</span><span class="c1">//法线</span>
+                <span class="n">float4</span> <span class="n">tangent</span><span class="o">:</span><span class="n">TANGENT</span><span class="p">;</span><span class="c1">//切线</span>
+                <span class="n">float4</span> <span class="n">texcoord</span><span class="o">:</span><span class="n">TEXCOORD0</span><span class="p">;</span><span class="c1">//纹理</span>
+            <span class="p">};</span>
+
+            <span class="k">struct</span> <span class="n">v2f</span> <span class="p">{</span>
+                <span class="n">float4</span> <span class="n">pos</span><span class="o">:</span><span class="n">SV_POSITION</span><span class="p">;</span>
+                <span class="n">float4</span> <span class="n">uv</span><span class="o">:</span><span class="n">TEXCOORD0</span><span class="p">;</span><span class="c1">//纹理映射坐标</span>
+                <span class="n">float3</span> <span class="n">lightDir</span><span class="o">:</span><span class="n">TEXCOORD1</span><span class="p">;</span><span class="c1">//光线</span>
+                <span class="n">float3</span> <span class="n">viewDir</span><span class="o">:</span><span class="n">TEXCOORD2</span><span class="p">;</span><span class="c1">//视线</span>
+            <span class="p">};</span>
+
+            <span class="n">v2f</span> <span class="n">vert</span><span class="p">(</span><span class="n">a2v</span> <span class="n">i</span><span class="p">){</span>
+                <span class="n">v2f</span> <span class="n">o</span><span class="p">;</span>
+                <span class="n">o</span><span class="p">.</span><span class="n">pos</span> <span class="o">=</span> <span class="n">UnityObjectToClipPos</span><span class="p">(</span><span class="n">i</span><span class="p">.</span><span class="n">vertex</span><span class="p">);</span>
+                <span class="c1">//减少插值寄存器的 xy存储_MainTex的纹理坐标 ，zw存储_BumpMap坐标</span>
+                <span class="n">o</span><span class="p">.</span><span class="n">uv</span><span class="p">.</span><span class="n">xy</span> <span class="o">=</span><span class="n">i</span><span class="p">.</span><span class="n">texcoord</span><span class="p">.</span><span class="n">xy</span><span class="o">*</span><span class="n">_MainTex_ST</span><span class="p">.</span><span class="n">xy</span><span class="o">+</span><span class="n">_MainTex_ST</span><span class="p">.</span><span class="n">zw</span><span class="p">;</span>
+                <span class="n">o</span><span class="p">.</span><span class="n">uv</span><span class="p">.</span><span class="n">zw</span> <span class="o">=</span> <span class="n">i</span><span class="p">.</span><span class="n">texcoord</span><span class="p">.</span><span class="n">xy</span><span class="o">*</span><span class="n">_BumpMap_ST</span><span class="p">.</span><span class="n">xy</span><span class="o">+</span><span class="n">_BumpMap_ST</span><span class="p">.</span><span class="n">zw</span><span class="p">;</span>
+                <span class="c1">//计算副切线</span>
+                <span class="n">float3</span> <span class="n">binormal</span> <span class="o">=</span> <span class="n">cross</span><span class="p">(</span><span class="n">normalize</span><span class="p">(</span><span class="n">i</span><span class="p">.</span><span class="n">normal</span><span class="p">),</span><span class="n">normalize</span><span class="p">(</span><span class="n">i</span><span class="p">.</span><span class="n">tangent</span><span class="p">.</span><span class="n">xyz</span><span class="p">))</span><span class="o">*</span><span class="n">i</span><span class="p">.</span><span class="n">tangent</span><span class="p">.</span><span class="n">w</span><span class="p">;</span>
+                <span class="n">float3x3</span> <span class="n">rotation</span> <span class="o">=</span> <span class="n">float3x3</span><span class="p">(</span><span class="n">i</span><span class="p">.</span><span class="n">tangent</span><span class="p">.</span><span class="n">xyz</span><span class="p">,</span><span class="n">binormal</span><span class="p">,</span><span class="n">i</span><span class="p">.</span><span class="n">normal</span><span class="p">);</span>
+                <span class="c1">//获取到顶点坐标的光线防线后，把光线方向从模型空间转换到切线空间</span>
+                <span class="n">o</span><span class="p">.</span><span class="n">lightDir</span> <span class="o">=</span> <span class="n">mul</span><span class="p">(</span><span class="n">rotation</span><span class="p">,</span><span class="n">ObjSpaceLightDir</span><span class="p">(</span><span class="n">i</span><span class="p">.</span><span class="n">vertex</span><span class="p">)).</span><span class="n">xyz</span><span class="p">;</span>
+                <span class="n">o</span><span class="p">.</span><span class="n">lightDir</span> <span class="o">=</span> <span class="n">mul</span><span class="p">(</span><span class="n">rotation</span><span class="p">,</span><span class="n">ObjSpaceViewDir</span><span class="p">(</span><span class="n">i</span><span class="p">.</span><span class="n">vertex</span><span class="p">)).</span><span class="n">xyz</span><span class="p">;</span>
+                <span class="k">return</span> <span class="n">o</span><span class="p">;</span>
+            <span class="p">}</span>
+
+            <span class="n">fixed4</span> <span class="n">frag</span><span class="p">(</span><span class="n">v2f</span> <span class="n">i</span><span class="p">)</span><span class="o">:</span><span class="n">SV_TARGET</span>
+            <span class="p">{</span>
+                <span class="n">fixed3</span> <span class="n">tangentLightDir</span> <span class="o">=</span> <span class="n">normalize</span><span class="p">(</span><span class="n">i</span><span class="p">.</span><span class="n">lightDir</span><span class="p">);</span>
+                <span class="n">fixed3</span> <span class="n">tangentViewDir</span> <span class="o">=</span> <span class="n">normalize</span><span class="p">(</span><span class="n">i</span><span class="p">.</span><span class="n">viewDir</span><span class="p">);</span>
+                <span class="n">fixed4</span> <span class="n">packedNormal</span> <span class="o">=</span> <span class="n">tex2D</span><span class="p">(</span><span class="n">_BumpMap</span><span class="p">,</span><span class="n">i</span><span class="p">.</span><span class="n">uv</span><span class="p">.</span><span class="n">zw</span><span class="p">);</span>
+                <span class="n">fixed3</span> <span class="n">tangentNormal</span><span class="p">;</span>
+                <span class="n">tangentNormal</span> <span class="o">=</span> <span class="n">UnpackNormal</span><span class="p">(</span><span class="n">packedNormal</span><span class="p">);</span>
+                <span class="n">tangentNormal</span><span class="p">.</span><span class="n">xy</span> <span class="o">*=</span> <span class="n">_BumpScale</span><span class="p">;</span>
+                <span class="n">tangentNormal</span><span class="p">.</span><span class="n">z</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="o">-</span><span class="n">saturate</span><span class="p">(</span><span class="n">dot</span><span class="p">(</span><span class="n">tangentNormal</span><span class="p">,</span><span class="n">tangentViewDir</span><span class="p">)));</span>
+                <span class="n">fixed3</span> <span class="n">albedo</span> <span class="o">=</span> <span class="n">tex2D</span><span class="p">(</span><span class="n">_MainTex</span><span class="p">,</span><span class="n">i</span><span class="p">.</span><span class="n">uv</span><span class="p">).</span><span class="n">rgb</span><span class="o">*</span><span class="n">_Color</span><span class="p">.</span><span class="n">rgb</span><span class="p">;</span>
+                <span class="n">fixed3</span> <span class="n">ambient</span> <span class="o">=</span> <span class="n">UNITY_LIGHTMODEL_AMBIENT</span><span class="p">.</span><span class="n">xyz</span><span class="o">*</span><span class="n">albedo</span><span class="p">;</span>
+                <span class="n">fixed3</span> <span class="n">diffuse</span> <span class="o">=</span> <span class="n">_LightColor0</span><span class="p">.</span><span class="n">rgb</span><span class="o">*</span><span class="n">albedo</span><span class="o">*</span><span class="n">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">dot</span><span class="p">(</span><span class="n">tangentNormal</span><span class="p">,</span><span class="n">tangentLightDir</span><span class="p">));</span>
+                <span class="n">fixed3</span> <span class="n">halfDir</span> <span class="o">=</span> <span class="n">normalize</span><span class="p">(</span><span class="n">tangentLightDir</span><span class="o">+</span><span class="n">tangentViewDir</span><span class="p">);</span>
+                <span class="n">fixed3</span> <span class="n">specular</span> <span class="o">=</span> <span class="n">_LightColor0</span><span class="p">.</span><span class="n">rgb</span><span class="o">*</span><span class="n">_Specular</span><span class="p">.</span><span class="n">rgb</span><span class="o">*</span><span class="n">pow</span><span class="p">(</span><span class="n">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">dot</span><span class="p">(</span><span class="n">tangentNormal</span><span class="p">,</span><span class="n">halfDir</span><span class="p">)),</span><span class="n">_Gloss</span><span class="p">);</span>
+                <span class="k">return</span> <span class="n">fixed4</span><span class="p">(</span><span class="n">ambient</span><span class="o">+</span><span class="n">diffuse</span><span class="o">+</span><span class="n">specular</span><span class="p">,</span><span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span>
+            <span class="p">}</span>
+
+
+            <span class="n">ENDCG</span>
+        <span class="p">}</span>
+       
+    <span class="p">}</span>
+    <span class="n">Fallback</span> <span class="s">"Diffuse"</span>
+<span class="p">}</span>
+
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>切线空间下计算的 凹凸映射
+<img src="/assets/img/sample/bumpamp.PNG" alt="切线空间法线纹理" /></p>
+:ET

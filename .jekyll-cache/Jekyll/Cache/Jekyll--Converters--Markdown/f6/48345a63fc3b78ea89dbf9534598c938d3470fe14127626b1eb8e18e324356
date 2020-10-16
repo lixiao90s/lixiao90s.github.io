@@ -1,0 +1,40 @@
+I"<h2 id="模块">模块</h2>
+<p>AKKA是调度模块化的，它由许多拥有不同特性的JAR组成。</p>
+<ul>
+  <li>akka-actor – 经典角色、类型角色、IO角色等。</li>
+  <li>akka-agent – 代理、整合了Scala的STM特性</li>
+  <li>akka-camel – 整合Apache的Camel</li>
+  <li>akka-cluster – 集群成员管理、弹性路由</li>
+  <li>akka-kernel – AKKA微内核，运行着一个极简应用服务器</li>
+  <li>akka-osgi – 在OSG容器里使用AKKA的基本bundle，包括akka-actor的类</li>
+  <li>akka-osgi-aries – Aries——服务提供角色系统的蓝图</li>
+  <li>akka-remote – 远程角色</li>
+  <li>akka-slf4j – SLF4J Logger (事件总线监听器)</li>
+  <li>akka-testkit – 测试角色系统的工具包Toolkit for testing Actor systems</li>
+  <li>akka-zeromq – 整合ZeroM</li>
+</ul>
+
+<h2 id="actor">Actor</h2>
+
+<ul>
+  <li>角色（Actor）
+    <ul>
+      <li>并发与并行性的高等级抽象</li>
+      <li>异步，无锁以及高性能的事件驱动编程模型</li>
+      <li>非常轻量级的事件驱动流程</li>
+    </ul>
+  </li>
+  <li>容错
+    <ul>
+      <li>拥有“让它崩溃”语义的管理层级</li>
+      <li>管理层级可以跨越多个JVM，实现真正的容错系统</li>
+      <li>非常适合编写可自我修复且永不停机的高容错能力的系统</li>
+    </ul>
+  </li>
+  <li>位置透明
+    <ul>
+      <li>akka旨在分布式环境中工作：角色之间都是用纯消息交互，并且一切都是异步的</li>
+    </ul>
+  </li>
+</ul>
+:ET

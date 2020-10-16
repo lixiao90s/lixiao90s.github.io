@@ -1,0 +1,111 @@
+I"Y<ul id="markdown-toc">
+  <li><a href="#创建我们第一个着色器" id="markdown-toc-创建我们第一个着色器">创建我们第一个着色器</a></li>
+  <li><a href="#着色器模板" id="markdown-toc-着色器模板">着色器模板</a></li>
+  <li><a href="#编写属性" id="markdown-toc-编写属性">编写属性</a></li>
+  <li><a href="#小结" id="markdown-toc-小结">小结</a></li>
+</ul>
+
+<h3 id="创建我们第一个着色器">创建我们第一个着色器</h3>
+
+<p><img src="/assets/shader2_1.png" alt="DrawCall工作原理" /></p>
+
+<h3 id="着色器模板">着色器模板</h3>
+<ul>
+  <li>Standard Surface Shader<br />
+标准表面着色器，模拟现实材质与灯光的关系，书写逻辑更符合普通程序</li>
+  <li>Unilt Shader <br />
+不受光照影响的模板Shader ,常用于UI，特效</li>
+  <li>Image Effect Shader <br />
+屏幕后处理定制模板shader，常见的Bloom,模糊等效果</li>
+  <li>Compute Shader<br />
+运行在图形显卡上的一段程序，可以直接将GPU作为并行处理器，从而使GPU不仅具有3D渲染能力，
+还具有其他的运算能力</li>
+</ul>
+
+<h3 id="编写属性">编写属性</h3>
+<p>这里我们先创建一个Unilt Shader,并且删除SubShader的内容，只保留Properties。
+<img src="/assets/shader2_2.png" alt="DrawCall工作原理" /></p>
+
+<p>其中<strong>Properties</strong> 语义包含了一些属性，通过这些属性，我们可以方便的调整材质属性，并且在shader中访问这些属性。
+<strong>Properties</strong>语义块的定义如下</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+</pre></td><td class="rouge-code"><pre> Properties
+    {
+        _MainTex ("Texture", 2D) = "white" {}
+    }
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>属性名字_MainTex,通常以下划线开始，材质面板现实的名字”Texture”,2D是当前属性的指定类型， “white” {}是默认值。
+那么shader中都有哪些属性呢</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: left">属性类型</th>
+      <th style="text-align: left">例子</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: left">Int</td>
+      <td style="text-align: left">_Int(“Int”,Int)=2</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Float</td>
+      <td style="text-align: left">_Float(“Float”,Float)=2</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Range</td>
+      <td style="text-align: left">_Range(“Range”,Range(1.0,3.0))=2.0</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Color</td>
+      <td style="text-align: left">_Color(“Color”,Color)=(1.0,1.0,1.0,1.0)</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Vector</td>
+      <td style="text-align: left">_Vector(“Vector”,Vector)=(1.0,1.0,1.0,1.0))</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">2D</td>
+      <td style="text-align: left">_2D(“2D”,2D)=””{}</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Cube</td>
+      <td style="text-align: left">_Cube(“Cube”,Cube)=”white”{}</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">3D</td>
+      <td style="text-align: left">_3D(“3D”,3D)=”white”{}</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>其中2D,Cube 3D 3种是纹理类型，了解这些后可以声明一个只有Properties的shader，并在里面声明纹理和颜色属性,创建一个材质命名HelloMat,将我们创建的shader，
+赋值给材质球，我们来看看效果。<br />
+<img src="/assets/shader2_3.png" alt="创建shader菜单" /></p>
+
+<p>对应的材质球显示</p>
+
+<p><img src="/assets/shader2_4.png" alt="Shader模板" /></p>
+
+<p>这里我们在材质球中看到了声明的_Texture属性和_Color属性,那么我们如何再着色器中访问这些属性呢,更改这些属性并最后反应到材质，模型上呢
+接下来完善刚才的shader,添加如下代码。</p>
+
+<p><img src="/assets/shader2_5.png" alt="HelloShader" /></p>
+
+<p>编写完成后我们将得到如下效果的材质球</p>
+
+<p><img src="/assets/shader2_6.png" alt="HelloShader" /></p>
+
+<h3 id="小结">小结</h3>
+
+<p>到这里我们完成了我们的第一个shader，这个例子了解了如何在cg代码中引用Properties的变量，了解了顶点着色器
+和片元着色器，以及变量如何再顶点着色器和片元着色器中传递，如何获取模型的数据，最后片元着色器如何输出等。在下一篇文章中
+会总结下Properties和cg变量的对应，常见的语义等。</p>
+
+:ET

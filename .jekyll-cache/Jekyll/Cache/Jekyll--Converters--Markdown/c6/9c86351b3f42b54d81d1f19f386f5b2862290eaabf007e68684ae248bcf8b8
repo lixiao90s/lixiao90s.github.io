@@ -1,0 +1,32 @@
+I"<p>本文内容主要参考 《Unity shader入门精要》一书，旨在总结所学知识与加深个人理解，为了表示方便，与书中公式略有差别。</p>
+
+<h3 id="漫反射">漫反射</h3>
+<p>漫反射光照符合 兰伯特定律：反射光线强度与法线表面和光源方向的夹角的余弦值成正比。
+公式 \(\mathtt{c}_{diffuse}=(\mathtt{c}_{light}\cdot \mathtt{m}_{diffuse})max(0,\vec n \cdot  \vec l)\)      <br />
+$\vec n$ 是表面法线，$\vec l$ 指向光源的单位矢量，$m_{diffuse}$ 材质漫反射颜色，$c_{light}$ 是光源颜色。</p>
+
+<h3 id="高光反射">高光反射</h3>
+<h4 id="phong模型">phong模型</h4>
+<p>这里的高光反射是经验模型，并不完全符合真实世界的高光反射现象，它可用于计算沿完全镜面反射方向被反射的光线，这可以让物体
+看起来有光泽。
+公式\(\mathtt{c}_{specular}=(\mathtt{c}_{light}\cdot\mathtt{m}_{specular})max(0,\vec v\cdot\vec r)^{m_{gloss}}\)
+$m_{gloss}$是材质的光泽度（gloss）,也被称为反光度（shininess）,它用于控制高光区域的亮点有多大，$m_{gloss}$越大，亮点越小。
+$m_{specular}$是材质高光反射颜色，它用于控制该材质对于高光反射的强度和颜色。$c_{light}$则是光源的颜色和强度。
+$\vec r$是反射方向，反射可以通过计算获得 $\vec r=2(\vec n\cdot\vec l)\vec n-\vec l$</p>
+<h4 id="blinn模型">Blinn模型</h4>
+<p>公式 
+\(\mathtt{c}_{specular}=(\mathtt{c}_{light}\cdot\mathtt{m}_{specular})max(0,\vec n\cdot\vec h)^{m_{gloss}}\)   <br />
+Blinn 基本思想是 避免计算反射方向$\vec r$,引入新的矢量 $\vec h$。
+\(\vec h=\frac{\vec v+\vec l}{|\vec v+\vec l|}\)</p>
+
+<h3 id="半兰伯特模型">半兰伯特模型</h3>
+<p>公式 \(\mathtt{c}_{diffuse}=(\mathtt{c}_{light}\cdot \mathtt{m}_{diffuse})(\alpha(0,\vec n \cdot  \vec l)+\beta)\)
+半兰伯特模型没有使用max操作来防止$\vec n$和$\vec l$和的点积为负值，而是进行了$\alpha$倍的缩放和再加上一个$\beta$的偏移。
+在绝大多数情况下，$\alpha$和$\beta$的值均为0.5。一般公式为
+\(\mathtt{c}_{diffuse}=(\mathtt{c}_{light}\cdot \mathtt{m}_{diffuse})(0.5(0,\vec n \cdot  \vec l)+0.5)\)</p>
+<h3 id="逐像素与逐顶点">逐像素与逐顶点</h3>
+<p>根据计算在不同函数中的实现，可以分为逐像素光照和逐顶点光照。在片元着色器。由于顶点数目往往小于像素数目，因此逐顶点光照的计算量往往
+小于逐像素光照。但是由于逐顶点光照依赖线性插值来得到像素光照，因此光照模型中有非线性的计算时，逐顶点光照会有问题。
+由于逐顶点光照会在渲染图元内部对顶点颜色进行插值，这会导致渲染图元内部颜色总是暗语顶点最高颜色值。</p>
+
+:ET

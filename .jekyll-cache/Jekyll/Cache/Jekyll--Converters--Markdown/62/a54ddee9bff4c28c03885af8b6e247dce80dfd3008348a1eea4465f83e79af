@@ -1,0 +1,714 @@
+I"Ѱ<h2 id="赫夫曼树">赫夫曼树</h2>
+<p>树的带权路径长度：树的带权路径长度规定为所有的叶子节点的带权路径长度之和（wpl的和），wpl最小的树就是赫夫曼树
+给定n个权值作为n个叶子节点，构造一颗二叉树，若该树的带权路径达到最小（wpl），这样的二叉树称为最优二叉树。
+赫夫曼树是带权路径最短的树，权越大离根结点距离越近</p>
+
+<h2 id="构建赫夫曼树">构建赫夫曼树</h2>
+
+<p>构建赫夫曼树的思路</p>
+<ul>
+  <li>从小到大进行排序，每个数据看成一个节点，每个节点看成最简单的二叉树</li>
+  <li>取出根节点权重值最小的两颗二叉树</li>
+  <li>组成一颗新的二叉树，新的二叉树的根节点权值是前面两颗二叉树的根节点权值的和</li>
+  <li>再将这颗新的二叉树，以根节点的权值大小再次排序</li>
+  <li>不断重复 1-4的步骤，直到数列中，所有的数据都被处理。就得到一颗赫夫曼树。</li>
+</ul>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+</pre></td><td class="rouge-code"><pre><span class="kn">package</span> <span class="nn">com.learn.huffman</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">java.util.ArrayList</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.util.Collections</span><span class="o">;</span>
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">HuffmanTree</span> <span class="o">{</span>
+
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="nc">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="kt">int</span><span class="o">[]</span> <span class="n">arr</span><span class="o">=</span><span class="k">new</span> <span class="kt">int</span><span class="o">[]{</span><span class="mi">13</span><span class="o">,</span><span class="mi">7</span><span class="o">,</span><span class="mi">8</span><span class="o">,</span><span class="mi">3</span><span class="o">,</span><span class="mi">29</span><span class="o">,</span><span class="mi">6</span><span class="o">,</span><span class="mi">1</span><span class="o">};</span>
+        <span class="n">createHuffManTree</span><span class="o">(</span><span class="n">arr</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="c1">//创建赫夫曼树</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">createHuffManTree</span><span class="o">(</span><span class="kt">int</span><span class="o">[]</span> <span class="n">arr</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="nc">ArrayList</span><span class="o">&lt;</span><span class="nc">Node</span><span class="o">&gt;</span> <span class="n">nodes</span><span class="o">=</span><span class="k">new</span> <span class="nc">ArrayList</span><span class="o">&lt;</span><span class="nc">Node</span><span class="o">&gt;(</span><span class="n">arr</span><span class="o">.</span><span class="na">length</span><span class="o">);</span>
+        <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="o">;</span><span class="n">i</span><span class="o">&lt;</span><span class="n">arr</span><span class="o">.</span><span class="na">length</span><span class="o">;</span><span class="n">i</span><span class="o">++)</span>
+        <span class="o">{</span>
+            <span class="n">nodes</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="k">new</span> <span class="nc">Node</span><span class="o">(</span><span class="n">arr</span><span class="o">[</span><span class="n">i</span><span class="o">]));</span>
+        <span class="o">}</span>
+        <span class="k">while</span> <span class="o">(</span><span class="n">nodes</span><span class="o">.</span><span class="na">size</span><span class="o">()&gt;</span><span class="mi">1</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="c1">//排序</span>
+            <span class="nc">Collections</span><span class="o">.</span><span class="na">sort</span><span class="o">(</span><span class="n">nodes</span><span class="o">);</span>
+            <span class="nc">Node</span> <span class="n">leftNode</span> <span class="o">=</span><span class="n">nodes</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="mi">0</span><span class="o">);</span>
+            <span class="nc">Node</span> <span class="n">rightNode</span> <span class="o">=</span> <span class="n">nodes</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="mi">1</span><span class="o">);</span>
+            <span class="nc">Node</span> <span class="n">root</span><span class="o">=</span> <span class="k">new</span> <span class="nc">Node</span><span class="o">(</span><span class="n">leftNode</span><span class="o">.</span><span class="na">value</span><span class="o">+</span><span class="n">rightNode</span><span class="o">.</span><span class="na">value</span><span class="o">);</span>
+            <span class="n">root</span><span class="o">.</span><span class="na">left</span><span class="o">=</span><span class="n">leftNode</span><span class="o">;</span>
+            <span class="n">root</span><span class="o">.</span><span class="na">right</span> <span class="o">=</span> <span class="n">rightNode</span><span class="o">;</span>
+            <span class="n">nodes</span><span class="o">.</span><span class="na">remove</span><span class="o">(</span><span class="n">leftNode</span><span class="o">);</span>
+            <span class="n">nodes</span><span class="o">.</span><span class="na">remove</span><span class="o">(</span><span class="n">rightNode</span><span class="o">);</span>
+            <span class="n">nodes</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">root</span><span class="o">);</span>
+        <span class="o">}</span>
+
+        <span class="c1">//前序遍历 nodes</span>
+        <span class="n">nodes</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="mi">0</span><span class="o">).</span><span class="na">preOrder</span><span class="o">();</span>
+    <span class="o">}</span>
+
+<span class="o">}</span>
+
+<span class="kd">class</span> <span class="nc">Node</span> <span class="kd">implements</span> <span class="nc">Comparable</span><span class="o">&lt;</span><span class="nc">Node</span><span class="o">&gt;{</span>
+
+    <span class="kt">int</span> <span class="n">value</span><span class="o">;</span>
+
+    <span class="nc">Node</span> <span class="n">left</span><span class="o">;</span>
+
+    <span class="nc">Node</span> <span class="n">right</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="nf">Node</span><span class="o">(</span><span class="kt">int</span> <span class="n">value</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setLeft</span><span class="o">(</span><span class="nc">Node</span> <span class="n">left</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">left</span> <span class="o">=</span> <span class="n">left</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setRight</span><span class="o">(</span><span class="nc">Node</span> <span class="n">right</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">right</span> <span class="o">=</span> <span class="n">right</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kt">int</span> <span class="nf">getValue</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">value</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="nc">Node</span> <span class="nf">getLeft</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">left</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="nc">Node</span> <span class="nf">getRight</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">right</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="cm">/**
+     * 前序遍历
+     */</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">preOrder</span><span class="o">()</span>
+    <span class="o">{</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="k">this</span><span class="o">.</span><span class="na">toString</span><span class="o">());</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">left</span><span class="o">!=</span><span class="kc">null</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="n">left</span><span class="o">.</span><span class="na">preOrder</span><span class="o">();</span>
+        <span class="o">}</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">right</span><span class="o">!=</span><span class="kc">null</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="n">right</span><span class="o">.</span><span class="na">preOrder</span><span class="o">();</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="c1">//从小到大排序</span>
+    <span class="kd">public</span> <span class="kt">int</span> <span class="nf">compareTo</span><span class="o">(</span><span class="nc">Node</span> <span class="n">o</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="k">this</span><span class="o">.</span><span class="na">value</span><span class="o">-</span><span class="n">o</span><span class="o">.</span><span class="na">value</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="nc">String</span> <span class="nf">toString</span><span class="o">()</span>
+    <span class="o">{</span>
+
+        <span class="k">return</span> <span class="k">this</span><span class="o">.</span><span class="na">value</span><span class="o">+</span><span class="s">""</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<h2 id="赫夫曼编码">赫夫曼编码</h2>
+
+<ul>
+  <li>赫夫曼编码是赫夫曼树在电讯通信中的经典应用之一</li>
+  <li>赫夫曼编码广泛地用于数据文件压缩，其压缩率通常在20%~90%之间</li>
+  <li>赫夫曼码是可变字长编码（vlc）的一种</li>
+</ul>
+
+<h2 id="赫夫曼编码实现">赫夫曼编码实现</h2>
+<ul>
+  <li>前缀编码：字符的编码都不能是其他字符编码的前缀，符合此要求的编码叫做前缀编码，即不能匹配到重复的编码</li>
+  <li>根据赫夫曼树，给各个字符，规定编码，向左的路径为0，向右为1 ，前缀编码，匹配的时候不会出现多意性（因为每一个字符都有唯一路径）</li>
+</ul>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193
+194
+195
+196
+197
+198
+199
+200
+201
+202
+203
+204
+205
+206
+207
+208
+209
+210
+211
+212
+213
+214
+215
+216
+217
+218
+219
+220
+221
+222
+223
+224
+225
+226
+227
+228
+229
+230
+231
+232
+</pre></td><td class="rouge-code"><pre><span class="kn">package</span> <span class="nn">com.learn.huffmancode</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">java.util.*</span><span class="o">;</span>
+
+<span class="c1">//赫夫曼编码实现</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">huffManCodeDemo</span> <span class="o">{</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="nc">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">String</span> <span class="n">str</span> <span class="o">=</span> <span class="s">"i like like like java do you like a java"</span><span class="o">;</span>
+        <span class="n">huffManCode</span> <span class="n">tree</span> <span class="o">=</span> <span class="k">new</span> <span class="n">huffManCode</span><span class="o">(</span><span class="n">str</span><span class="o">.</span><span class="na">getBytes</span><span class="o">());</span>
+        <span class="nc">HashMap</span><span class="o">&lt;</span><span class="nc">Byte</span><span class="o">,</span> <span class="nc">String</span><span class="o">&gt;</span> <span class="n">huffmanCodes</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="na">getHuffManCode</span><span class="o">();</span>
+        <span class="kt">var</span> <span class="n">bytes</span> <span class="o">=</span> <span class="n">huffManZip</span><span class="o">(</span><span class="n">str</span><span class="o">.</span><span class="na">getBytes</span><span class="o">(),</span><span class="n">huffmanCodes</span><span class="o">);</span>
+
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span> <span class="k">new</span> <span class="nc">String</span><span class="o">(</span><span class="n">decode</span><span class="o">(</span><span class="n">bytes</span><span class="o">,</span><span class="n">huffmanCodes</span><span class="o">))</span> <span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="cm">/**
+     * 解压缩赫夫曼编码后的byte数组
+     * 1.将byte还原成二进制字符串
+     * @param byteArr  byteArr是将赫夫曼表，按字符顺序对应的二进制字符串按8位组成一个byte存储后的数组，最后一位不够8位则高位补0
+     * @param huffManCodes 对应的哈夫曼编码表
+     * @return
+     */</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">byte</span><span class="o">[]</span> <span class="nf">decode</span><span class="o">(</span><span class="kt">byte</span><span class="o">[]</span> <span class="n">byteArr</span><span class="o">,</span><span class="nc">HashMap</span><span class="o">&lt;</span><span class="nc">Byte</span><span class="o">,</span><span class="nc">String</span><span class="o">&gt;</span> <span class="n">huffManCodes</span><span class="o">)</span>
+    <span class="o">{</span>
+
+        <span class="c1">//转置哈夫曼编码</span>
+        <span class="nc">HashMap</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">,</span><span class="nc">Byte</span><span class="o">&gt;</span> <span class="n">reverseHuffManCodes</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">HashMap</span><span class="o">&lt;&gt;();</span>
+        <span class="k">for</span><span class="o">(</span><span class="nc">Map</span><span class="o">.</span><span class="na">Entry</span><span class="o">&lt;</span><span class="nc">Byte</span><span class="o">,</span><span class="nc">String</span><span class="o">&gt;</span> <span class="nl">entry:</span><span class="n">huffManCodes</span><span class="o">.</span><span class="na">entrySet</span><span class="o">())</span>
+        <span class="o">{</span>
+            <span class="n">reverseHuffManCodes</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="n">entry</span><span class="o">.</span><span class="na">getValue</span><span class="o">(),</span><span class="n">entry</span><span class="o">.</span><span class="na">getKey</span><span class="o">());</span>
+        <span class="o">}</span>
+
+        <span class="nc">StringBuilder</span> <span class="n">bitString</span> <span class="o">=</span><span class="k">new</span> <span class="nc">StringBuilder</span><span class="o">();</span>
+        <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="o">;</span><span class="n">i</span><span class="o">&lt;</span><span class="n">byteArr</span><span class="o">.</span><span class="na">length</span><span class="o">;</span><span class="n">i</span><span class="o">++)</span>
+        <span class="o">{</span>
+            <span class="n">bitString</span><span class="o">.</span><span class="na">append</span><span class="o">(</span><span class="n">byteToBitString</span><span class="o">(</span><span class="n">i</span><span class="o">!=</span><span class="n">byteArr</span><span class="o">.</span><span class="na">length</span><span class="o">-</span><span class="mi">1</span><span class="o">,</span><span class="n">byteArr</span><span class="o">[</span><span class="n">i</span><span class="o">]));</span>
+        <span class="o">}</span>
+        <span class="kt">int</span> <span class="n">mark</span> <span class="o">=</span><span class="mi">0</span><span class="o">;</span>
+        <span class="nc">List</span><span class="o">&lt;</span><span class="nc">Byte</span><span class="o">&gt;</span> <span class="n">lst</span><span class="o">=</span> <span class="k">new</span> <span class="nc">ArrayList</span><span class="o">&lt;&gt;()</span>  <span class="o">;</span>
+        <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="o">;</span><span class="n">i</span><span class="o">&lt;</span><span class="n">bitString</span><span class="o">.</span><span class="na">length</span><span class="o">();</span><span class="n">i</span><span class="o">++)</span>
+        <span class="o">{</span>
+            <span class="kt">var</span> <span class="n">temp</span><span class="o">=</span><span class="n">reverseHuffManCodes</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">bitString</span><span class="o">.</span><span class="na">substring</span><span class="o">(</span><span class="n">mark</span><span class="o">,</span><span class="n">i</span><span class="o">));</span>
+            <span class="k">if</span><span class="o">(</span><span class="n">temp</span><span class="o">!=</span><span class="kc">null</span><span class="o">)</span>
+            <span class="o">{</span>
+                <span class="n">lst</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">temp</span><span class="o">);</span>
+                <span class="n">mark</span><span class="o">=</span><span class="n">i</span><span class="o">;</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+        <span class="n">lst</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">reverseHuffManCodes</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">bitString</span><span class="o">.</span><span class="na">substring</span><span class="o">(</span><span class="n">mark</span><span class="o">)));</span>
+        <span class="kt">byte</span><span class="o">[]</span> <span class="n">original</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">byte</span><span class="o">[</span><span class="n">lst</span><span class="o">.</span><span class="na">size</span><span class="o">()];</span>
+        <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="o">;</span><span class="n">i</span><span class="o">&lt;</span><span class="n">lst</span><span class="o">.</span><span class="na">size</span><span class="o">();</span><span class="n">i</span><span class="o">++)</span>
+        <span class="o">{</span>
+            <span class="n">original</span><span class="o">[</span><span class="n">i</span><span class="o">]=</span><span class="n">lst</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">i</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="n">original</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="cm">/**
+     * 将一个byte转成二进制的字符串
+     * @param flag 是否需要进行补位，如果是最后一个字节不需要补高位
+     * @return
+     */</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="nc">String</span> <span class="nf">byteToBitString</span><span class="o">(</span><span class="kt">boolean</span> <span class="n">flag</span><span class="o">,</span><span class="kt">byte</span> <span class="n">b</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="kt">int</span> <span class="n">temp</span> <span class="o">=</span><span class="n">b</span><span class="o">;</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">flag</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="n">temp</span> <span class="o">|=</span><span class="mi">256</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="nc">String</span> <span class="n">bitString</span> <span class="o">=</span> <span class="nc">Integer</span><span class="o">.</span><span class="na">toBinaryString</span><span class="o">(</span><span class="n">temp</span><span class="o">);</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">flag</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="n">bitString</span> <span class="o">=</span> <span class="n">bitString</span><span class="o">.</span><span class="na">substring</span><span class="o">(</span><span class="n">bitString</span><span class="o">.</span><span class="na">length</span><span class="o">()-</span><span class="mi">8</span><span class="o">);</span>
+        <span class="o">}</span>
+
+        <span class="k">return</span> <span class="n">bitString</span><span class="o">;</span>
+    <span class="o">}</span>
+    <span class="cm">/**
+     * @param bytes 需要压缩byte【】
+     * @return 返回赫夫曼编码处理后的 byte[]
+     * 举例： String content = "i like like like java do you like a java"; =》 byte[] contentBytes = content.getBytes();
+     * 返回的是 字符串 "1010100010111111110010001011111111001000101111111100100101001101110001110000011011101000111100101000101111111100110001001010011011100"
+     * =&gt; 对应的 byte[] huffmanCodeBytes  ，即 8位对应一个 byte,放入到 huffmanCodeBytes
+     * huffmanCodeBytes[0] =  10101000(补码) =&gt; byte  [推导  10101000=&gt; 10101000 - 1 =&gt; 10100111(反码)=&gt; 11011000= -88 ]
+     * huffmanCodeBytes[1] = -88
+     */</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">byte</span><span class="o">[]</span> <span class="nf">huffManZip</span><span class="o">(</span> <span class="kt">byte</span><span class="o">[]</span> <span class="n">bytes</span><span class="o">,</span><span class="nc">HashMap</span><span class="o">&lt;</span><span class="nc">Byte</span><span class="o">,</span> <span class="nc">String</span><span class="o">&gt;</span> <span class="n">huffmanCodes</span><span class="o">)</span> <span class="o">{</span>
+
+        <span class="nc">StringBuilder</span> <span class="n">builder</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">StringBuilder</span><span class="o">();</span>
+        <span class="c1">//获取每个字符对应的赫夫曼路径编码</span>
+        <span class="k">for</span> <span class="o">(</span><span class="kt">var</span> <span class="n">b</span> <span class="o">:</span> <span class="n">bytes</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">builder</span><span class="o">.</span><span class="na">append</span><span class="o">(</span><span class="n">huffmanCodes</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">b</span><span class="o">));</span>
+        <span class="o">}</span>
+        <span class="nc">String</span> <span class="n">huffStr</span> <span class="o">=</span> <span class="n">builder</span><span class="o">.</span><span class="na">toString</span><span class="o">();</span>
+
+        <span class="kt">int</span> <span class="n">len</span> <span class="o">=</span> <span class="o">(</span><span class="n">huffStr</span><span class="o">.</span><span class="na">length</span><span class="o">()</span> <span class="o">+</span> <span class="mi">7</span><span class="o">)</span> <span class="o">/</span> <span class="mi">8</span><span class="o">;</span>
+        <span class="kt">byte</span><span class="o">[]</span> <span class="n">zipBytes</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">byte</span><span class="o">[</span><span class="n">len</span><span class="o">];</span>
+        <span class="c1">//每8位二进制转成一个byte类型数据</span>
+        <span class="c1">//获取长度</span>
+        <span class="kt">int</span> <span class="n">index</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+        <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">huffStr</span><span class="o">.</span><span class="na">length</span><span class="o">();</span> <span class="n">i</span> <span class="o">+=</span> <span class="mi">8</span><span class="o">)</span> <span class="o">{</span>
+            <span class="nc">String</span> <span class="n">byteStr</span><span class="o">;</span>
+            <span class="k">if</span> <span class="o">((</span><span class="n">i</span> <span class="o">+</span> <span class="mi">8</span><span class="o">)</span> <span class="o">&lt;</span> <span class="n">huffStr</span><span class="o">.</span><span class="na">length</span><span class="o">())</span> <span class="o">{</span>
+                <span class="n">byteStr</span> <span class="o">=</span>  <span class="n">huffStr</span><span class="o">.</span><span class="na">substring</span><span class="o">(</span><span class="n">i</span><span class="o">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">8</span><span class="o">);</span>
+            <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+                <span class="n">byteStr</span> <span class="o">=</span>  <span class="n">huffStr</span><span class="o">.</span><span class="na">substring</span><span class="o">(</span><span class="n">i</span><span class="o">);</span>
+            <span class="o">}</span>
+            <span class="n">zipBytes</span><span class="o">[</span><span class="n">index</span><span class="o">]</span> <span class="o">=</span> <span class="o">(</span><span class="kt">byte</span><span class="o">)</span><span class="nc">Integer</span><span class="o">.</span><span class="na">parseInt</span><span class="o">(</span><span class="n">byteStr</span><span class="o">,</span><span class="mi">2</span><span class="o">);</span>
+            <span class="n">index</span><span class="o">++;</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="n">zipBytes</span><span class="o">;</span>
+    <span class="o">}</span>
+
+<span class="o">}</span>
+
+<span class="cm">/**
+ * 将字符串转成哈夫曼编码
+ */</span>
+<span class="kd">class</span> <span class="nc">huffManCode</span> <span class="o">{</span>
+    <span class="c1">//根节点</span>
+    <span class="nc">Node</span> <span class="n">root</span><span class="o">;</span>
+    <span class="nc">HashMap</span><span class="o">&lt;</span><span class="nc">Byte</span><span class="o">,</span> <span class="nc">String</span><span class="o">&gt;</span> <span class="n">huffCodeMap</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">HashMap</span><span class="o">&lt;</span><span class="nc">Byte</span><span class="o">,</span> <span class="nc">String</span><span class="o">&gt;();</span>
+
+    <span class="cm">/**
+     * 把所有字符转换成哈夫曼树节点形式
+     *
+     * @param bytes 目标字符串
+     * @return 所欲节点列表
+     */</span>
+    <span class="nc">ArrayList</span><span class="o">&lt;</span><span class="nc">Node</span><span class="o">&gt;</span> <span class="nf">createNodeLst</span><span class="o">(</span><span class="kt">byte</span><span class="o">[]</span> <span class="n">bytes</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">ArrayList</span><span class="o">&lt;</span><span class="nc">Node</span><span class="o">&gt;</span> <span class="n">arrayList</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">ArrayList</span><span class="o">&lt;&gt;();</span>
+        <span class="nc">HashMap</span><span class="o">&lt;</span><span class="nc">Byte</span><span class="o">,</span> <span class="nc">Node</span><span class="o">&gt;</span> <span class="n">nodeDictionary</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">HashMap</span><span class="o">&lt;</span><span class="nc">Byte</span><span class="o">,</span> <span class="nc">Node</span><span class="o">&gt;();</span>
+        <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">bytes</span><span class="o">.</span><span class="na">length</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+            <span class="nc">Byte</span> <span class="n">data</span> <span class="o">=</span> <span class="n">bytes</span><span class="o">[</span><span class="n">i</span><span class="o">];</span>
+            <span class="nc">Node</span> <span class="n">node</span> <span class="o">=</span> <span class="n">nodeDictionary</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">data</span><span class="o">);</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">node</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">node</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Node</span><span class="o">(</span><span class="n">bytes</span><span class="o">[</span><span class="n">i</span><span class="o">],</span> <span class="mi">0</span><span class="o">);</span>
+                <span class="n">node</span><span class="o">.</span><span class="na">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">;</span>
+                <span class="n">node</span><span class="o">.</span><span class="na">weight</span><span class="o">++;</span>
+                <span class="n">nodeDictionary</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="n">data</span><span class="o">,</span> <span class="n">node</span><span class="o">);</span>
+            <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+                <span class="n">node</span><span class="o">.</span><span class="na">weight</span><span class="o">++;</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+        <span class="k">for</span> <span class="o">(</span><span class="kt">var</span> <span class="n">nodeSet</span> <span class="o">:</span> <span class="n">nodeDictionary</span><span class="o">.</span><span class="na">entrySet</span><span class="o">())</span> <span class="o">{</span>
+            <span class="n">arrayList</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">nodeSet</span><span class="o">.</span><span class="na">getValue</span><span class="o">());</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="n">arrayList</span><span class="o">;</span>
+    <span class="o">}</span>
+
+
+    <span class="kd">public</span> <span class="nf">huffManCode</span><span class="o">(</span><span class="kt">byte</span><span class="o">[]</span> <span class="n">bytes</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">ArrayList</span><span class="o">&lt;</span><span class="nc">Node</span><span class="o">&gt;</span> <span class="n">nodes</span> <span class="o">=</span> <span class="n">createNodeLst</span><span class="o">(</span><span class="n">bytes</span><span class="o">);</span>
+        <span class="k">while</span> <span class="o">(</span><span class="n">nodes</span><span class="o">.</span><span class="na">size</span><span class="o">()</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="o">)</span> <span class="o">{</span>
+            <span class="nc">Collections</span><span class="o">.</span><span class="na">sort</span><span class="o">(</span><span class="n">nodes</span><span class="o">);</span>
+            <span class="nc">Node</span> <span class="n">left</span> <span class="o">=</span> <span class="n">nodes</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="mi">0</span><span class="o">);</span>
+            <span class="nc">Node</span> <span class="n">right</span> <span class="o">=</span> <span class="n">nodes</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="mi">1</span><span class="o">);</span>
+            <span class="nc">Node</span> <span class="n">root</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Node</span><span class="o">(</span><span class="kc">null</span><span class="o">,</span> <span class="n">left</span><span class="o">.</span><span class="na">weight</span> <span class="o">+</span> <span class="n">right</span><span class="o">.</span><span class="na">weight</span><span class="o">);</span>
+            <span class="n">root</span><span class="o">.</span><span class="na">lNode</span> <span class="o">=</span> <span class="n">left</span><span class="o">;</span>
+            <span class="n">root</span><span class="o">.</span><span class="na">rNode</span> <span class="o">=</span> <span class="n">right</span><span class="o">;</span>
+            <span class="n">nodes</span><span class="o">.</span><span class="na">remove</span><span class="o">(</span><span class="n">left</span><span class="o">);</span>
+            <span class="n">nodes</span><span class="o">.</span><span class="na">remove</span><span class="o">(</span><span class="n">right</span><span class="o">);</span>
+            <span class="n">nodes</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">root</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="n">root</span> <span class="o">=</span> <span class="n">nodes</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="mi">0</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">print</span><span class="o">()</span> <span class="o">{</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">getHuffManCode</span><span class="o">());</span>
+    <span class="o">}</span>
+
+
+    <span class="kd">public</span> <span class="nc">HashMap</span><span class="o">&lt;</span><span class="nc">Byte</span><span class="o">,</span> <span class="nc">String</span><span class="o">&gt;</span> <span class="nf">getHuffManCode</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">getHuffManCode</span><span class="o">(</span><span class="n">root</span><span class="o">,</span> <span class="s">""</span><span class="o">,</span> <span class="k">new</span> <span class="nc">StringBuilder</span><span class="o">());</span>
+        <span class="k">return</span> <span class="n">huffCodeMap</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kt">void</span> <span class="nf">getHuffManCode</span><span class="o">(</span><span class="nc">Node</span> <span class="n">node</span><span class="o">,</span> <span class="nc">String</span> <span class="n">code</span><span class="o">,</span> <span class="nc">StringBuilder</span> <span class="n">builder</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">StringBuilder</span> <span class="n">tempBulider</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">StringBuilder</span><span class="o">(</span><span class="n">builder</span><span class="o">);</span>
+        <span class="n">tempBulider</span><span class="o">.</span><span class="na">append</span><span class="o">(</span><span class="n">code</span><span class="o">);</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">node</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="c1">//找到叶子节点</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">node</span><span class="o">.</span><span class="na">data</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+                <span class="c1">//向左0 向右 1</span>
+                <span class="n">getHuffManCode</span><span class="o">(</span><span class="n">node</span><span class="o">.</span><span class="na">lNode</span><span class="o">,</span> <span class="s">"0"</span><span class="o">,</span> <span class="n">tempBulider</span><span class="o">);</span>
+                <span class="n">getHuffManCode</span><span class="o">(</span><span class="n">node</span><span class="o">.</span><span class="na">rNode</span><span class="o">,</span> <span class="s">"1"</span><span class="o">,</span> <span class="n">tempBulider</span><span class="o">);</span>
+            <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+                <span class="n">huffCodeMap</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="n">node</span><span class="o">.</span><span class="na">data</span><span class="o">,</span> <span class="n">tempBulider</span><span class="o">.</span><span class="na">toString</span><span class="o">());</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+
+<span class="o">}</span>
+
+<span class="kd">class</span> <span class="nc">Node</span> <span class="kd">implements</span> <span class="nc">Comparable</span><span class="o">&lt;</span><span class="nc">Node</span><span class="o">&gt;</span> <span class="o">{</span>
+    <span class="c1">//字符</span>
+    <span class="nc">Byte</span> <span class="n">data</span><span class="o">;</span>
+    <span class="c1">//权值</span>
+    <span class="kd">public</span> <span class="kt">int</span> <span class="n">weight</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+    <span class="c1">//左子结点</span>
+    <span class="nc">Node</span> <span class="n">lNode</span><span class="o">;</span>
+    <span class="c1">//右子结点</span>
+    <span class="nc">Node</span> <span class="n">rNode</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="nf">Node</span><span class="o">(</span><span class="nc">Byte</span> <span class="n">data</span><span class="o">,</span> <span class="kt">int</span> <span class="n">weight</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">;</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">weight</span> <span class="o">=</span> <span class="n">weight</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="nc">Node</span> <span class="nf">getlNode</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">lNode</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setlNode</span><span class="o">(</span><span class="nc">Node</span> <span class="n">lNode</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">lNode</span> <span class="o">=</span> <span class="n">lNode</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="nc">Node</span> <span class="nf">getrNode</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">rNode</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setrNode</span><span class="o">(</span><span class="nc">Node</span> <span class="n">rNode</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">rNode</span> <span class="o">=</span> <span class="n">rNode</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">int</span> <span class="nf">compareTo</span><span class="o">(</span><span class="nc">Node</span> <span class="n">o</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="k">this</span><span class="o">.</span><span class="na">weight</span> <span class="o">-</span> <span class="n">o</span><span class="o">.</span><span class="na">weight</span><span class="o">;</span>
+    <span class="o">}</span>
+
+<span class="o">}</span>
+
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<h2 id="赫夫曼编码压缩数据注意事项">赫夫曼编码压缩数据注意事项</h2>
+
+<ul>
+  <li>如果文件本身已经是经过压缩处理的，那么使用赫夫曼编码再压缩效率会不明显，比如压缩视频，ppt等</li>
+  <li>赫夫曼编码是按字节处理的，因此可以处理所有文件（二级制文件，文本文件）</li>
+  <li>如果一个文件重复的内容不是很多，压缩效果也不会很明显</li>
+</ul>
+:ET

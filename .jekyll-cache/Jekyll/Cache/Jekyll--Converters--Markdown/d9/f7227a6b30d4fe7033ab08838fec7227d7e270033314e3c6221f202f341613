@@ -1,0 +1,167 @@
+I"�3<p>本文内容主要参考 《Unity shader入门精要》一书，旨在总结所学知识与加深个人理解</p>
+
+<h2 id="光照模型实践使用单张纹理代替漫反射颜色">光照模型实践,使用单张纹理代替漫反射颜色</h2>
+<p>高光公式
+\(\mathtt{c}_{specular}=(\mathtt{c}_{light}\cdot\mathtt{m}_{specular})max(0,\vec n\cdot\vec h)^{m_{gloss}} \qquad
+\vec h=\frac{\vec v+\vec l}{|\vec v+\vec l|}\)  <br />
+漫反射公式\(\mathtt{c}_{diffuse}=(\mathtt{c}_{light}\cdot \mathtt{m}_{diffuse})max(0,\vec n \cdot  \vec l)\)  <br />
+根据公式 我们需要取到$\vec n$ 表面法线，$\vec l$ 指向光源的单位矢量，$m_{diffuse}$ 材质漫反射颜色,$m_{specular}$ 材质高光颜色，$c_{light}$ 是光源颜色
+_MainTex_ST:在Unity中，我们需要使用纹理名_ST的方式来声明某个纹理的属性。其中ST是缩放(scale)和平移(translation)的缩写。_MainTex_ST 可以让我们得到该纹理的缩放和平移值，_MainTex_ST.xy存储的是缩放值，而_MainTex_ST.zw 存储的是偏移值。在顶点着色器中，我们使用纹理的属性值_MainTex_ST 来对
+顶点的纹理坐标进行变换，得到最终的纹理。在UnityCG.cginc 中有预定义
+#define TRANSFORM_TEX(tex,name) (tex.xy*name##_ST.xy+name##_ST.zw)。</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+</pre></td><td class="rouge-code"><pre><span class="n">Shader</span> <span class="s">"Practice/SingleTex"</span>
+<span class="p">{</span>
+    <span class="n">Properties</span>
+    <span class="p">{</span>
+        <span class="n">_MainTex</span> <span class="p">(</span><span class="s">"Texture"</span><span class="p">,</span> <span class="mi">2</span><span class="n">D</span><span class="p">)</span> <span class="o">=</span> <span class="s">"white"</span> <span class="p">{}</span>
+        <span class="n">_Color</span><span class="p">(</span><span class="s">"Color Tint"</span><span class="p">,</span><span class="n">Color</span><span class="p">)</span><span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span> <span class="c1">//漫反射颜色</span>
+        <span class="n">_Gloss</span><span class="p">(</span><span class="s">"Gloss"</span><span class="p">,</span><span class="n">Range</span><span class="p">(</span><span class="mi">8</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span><span class="mi">256</span><span class="p">))</span> <span class="o">=</span> <span class="mi">20</span> <span class="c1">//光泽度,光泽度越高反光面积越大</span>
+        <span class="n">_Specular</span><span class="p">(</span><span class="s">"Specular"</span><span class="p">,</span><span class="n">Color</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span> <span class="c1">//高光颜色</span>
+    <span class="p">}</span>
+    <span class="n">SubShader</span>
+    <span class="p">{</span>
+        <span class="n">Tags</span> <span class="p">{</span> <span class="s">"LightMode"</span><span class="o">=</span><span class="s">"ForwardBase"</span> <span class="p">}</span>
+
+        <span class="n">Pass</span>
+        <span class="p">{</span>
+            <span class="n">CGPROGRAM</span>
+            <span class="cp">#pragma vertex vert
+</span>            <span class="cp">#pragma fragment frag
+</span>            <span class="cp">#include "UnityCG.cginc"
+</span>            <span class="cp">#include "Lighting.cginc"
+</span>
+            <span class="k">struct</span> <span class="n">appdata</span>
+            <span class="p">{</span>
+                <span class="n">float4</span> <span class="n">vertex</span> <span class="o">:</span> <span class="n">POSITION</span><span class="p">;</span>
+                <span class="n">float4</span> <span class="n">normal</span> <span class="o">:</span> <span class="n">NORMAL</span><span class="p">;</span>
+                <span class="n">float2</span> <span class="n">texcoord</span> <span class="o">:</span> <span class="n">TEXCOORD0</span><span class="p">;</span>
+            <span class="p">};</span>
+
+            <span class="k">struct</span> <span class="n">v2f</span>
+            <span class="p">{</span>
+               <span class="n">float4</span> <span class="n">pos</span> <span class="o">:</span> <span class="n">SV_POSITION</span><span class="p">;</span>
+               <span class="n">float3</span> <span class="n">worldNormal</span> <span class="o">:</span> <span class="n">TEXCOORD0</span><span class="p">;</span>
+               <span class="n">float3</span> <span class="n">worldPos</span> <span class="o">:</span> <span class="n">TEXCOORD1</span><span class="p">;</span>
+               <span class="n">float2</span> <span class="n">uv</span> <span class="o">:</span> <span class="n">TEXCOORD2</span><span class="p">;</span>
+            <span class="p">};</span>
+
+            <span class="n">sampler2D</span> <span class="n">_MainTex</span><span class="p">;</span>
+            <span class="n">float4</span> <span class="n">_MainTex_ST</span><span class="p">;</span>
+            <span class="n">half</span> <span class="n">_Gloss</span><span class="p">;</span>
+            <span class="n">fixed4</span> <span class="n">_Specular</span><span class="p">;</span>
+            <span class="n">fixed4</span> <span class="n">_Color</span><span class="p">;</span>
+
+            <span class="n">v2f</span> <span class="n">vert</span> <span class="p">(</span><span class="n">appdata</span> <span class="n">v</span><span class="p">)</span>
+            <span class="p">{</span>
+              <span class="n">v2f</span> <span class="n">o</span><span class="p">;</span>
+              <span class="n">o</span><span class="p">.</span><span class="n">pos</span> <span class="o">=</span> <span class="n">UnityObjectToClipPos</span><span class="p">(</span><span class="n">v</span><span class="p">.</span><span class="n">vertex</span><span class="p">);</span> <span class="c1">//转换到裁剪空间</span>
+              <span class="n">o</span><span class="p">.</span><span class="n">worldNormal</span> <span class="o">=</span> <span class="n">UnityObjectToWorldNormal</span><span class="p">(</span><span class="n">v</span><span class="p">.</span><span class="n">normal</span><span class="p">);</span>
+              <span class="n">o</span><span class="p">.</span><span class="n">worldPos</span> <span class="o">=</span> <span class="n">mul</span><span class="p">(</span><span class="n">unity_ObjectToWorld</span><span class="p">,</span><span class="n">v</span><span class="p">.</span><span class="n">vertex</span><span class="p">).</span><span class="n">xyz</span><span class="p">;</span><span class="c1">//转换到世界空间</span>
+              <span class="n">o</span><span class="p">.</span><span class="n">uv</span> <span class="o">=</span> <span class="n">_MainTex_ST</span><span class="p">.</span><span class="n">xy</span><span class="o">*</span><span class="n">v</span><span class="p">.</span><span class="n">texcoord</span><span class="p">.</span><span class="n">xy</span><span class="o">+</span><span class="n">_MainTex_ST</span><span class="p">.</span><span class="n">zw</span><span class="p">;</span>
+              <span class="c1">// ==&gt;  o.uv = TRANSFORM_TEX(v.texcoord,_MainTex);  等价于上面的转换</span>
+              <span class="k">return</span> <span class="n">o</span><span class="p">;</span>
+            <span class="p">}</span>
+
+            <span class="n">fixed4</span> <span class="n">frag</span> <span class="p">(</span><span class="n">v2f</span> <span class="n">i</span><span class="p">)</span> <span class="o">:</span> <span class="n">SV_Target</span>
+            <span class="p">{</span>   
+                <span class="n">fixed4</span> <span class="n">col</span><span class="p">;</span>
+                <span class="c1">//C_diffuse = (C_light·M_diffuse)max(0,N·L)</span>
+                <span class="n">fixed3</span> <span class="n">worldNormal</span> <span class="o">=</span> <span class="n">normalize</span><span class="p">(</span><span class="n">i</span><span class="p">.</span><span class="n">worldNormal</span><span class="p">);</span> <span class="c1">//归一化后的世界坐标</span>
+                <span class="n">fixed3</span> <span class="n">wolrdLightDir</span> <span class="o">=</span> <span class="n">normalize</span><span class="p">(</span><span class="n">UnityWorldSpaceLightDir</span><span class="p">(</span><span class="n">i</span><span class="p">.</span><span class="n">worldPos</span><span class="p">));</span> <span class="c1">//光线</span>
+                <span class="n">fixed3</span> <span class="n">albedo</span> <span class="o">=</span> <span class="n">tex2D</span><span class="p">(</span><span class="n">_MainTex</span><span class="p">,</span><span class="n">i</span><span class="p">.</span><span class="n">uv</span><span class="p">).</span><span class="n">rgb</span><span class="o">*</span><span class="n">_Color</span><span class="p">.</span><span class="n">rgb</span><span class="p">;</span> <span class="c1">//取样当前纹理映射坐标的颜色 * 漫反射颜色 &lt;==&gt; 反射的颜色</span>
+                <span class="n">fixed3</span> <span class="n">ambient</span> <span class="o">=</span> <span class="n">UNITY_LIGHTMODEL_AMBIENT</span><span class="p">.</span><span class="n">xyz</span><span class="o">*</span><span class="n">albedo</span><span class="p">;</span> <span class="c1">//环境光*反射光</span>
+                <span class="c1">//C_diffuse = (C_light·m_diffuse)max(0,N·L) //漫反射计算公式 这里m_diffuse用的是纹理颜色</span>
+                <span class="n">fixed3</span> <span class="n">diffuse</span> <span class="o">=</span> <span class="n">_LightColor0</span><span class="p">.</span><span class="n">rgb</span><span class="o">*</span><span class="n">albedo</span><span class="o">*</span><span class="n">saturate</span><span class="p">(</span><span class="n">dot</span><span class="p">(</span><span class="n">worldNormal</span><span class="p">,</span><span class="n">wolrdLightDir</span><span class="p">));</span>
+                <span class="c1">//WolrdSpaceViewDir 输入的是模型空间中顶点 </span>
+                <span class="n">fixed3</span> <span class="n">viewDir</span> <span class="o">=</span> <span class="n">normalize</span><span class="p">(</span><span class="n">UnityWorldSpaceViewDir</span><span class="p">(</span><span class="n">i</span><span class="p">.</span><span class="n">worldPos</span><span class="p">));</span><span class="c1">//输入的是世界空间的顶点坐标</span>
+                <span class="c1">//H=(V+L)/|V+L|</span>
+                <span class="n">fixed3</span> <span class="n">halfDir</span> <span class="o">=</span> <span class="n">normalize</span><span class="p">(</span><span class="n">wolrdLightDir</span><span class="o">+</span><span class="n">viewDir</span><span class="p">);</span> 
+                <span class="c1">//C_specular = (C_light*m_specular)pow(max(0,N·H),m_gloss)</span>
+                <span class="n">fixed3</span> <span class="n">specular</span> <span class="o">=</span> <span class="n">_LightColor0</span><span class="p">.</span><span class="n">rgb</span><span class="o">*</span><span class="n">_Specular</span><span class="p">.</span><span class="n">rgb</span><span class="o">*</span><span class="n">pow</span><span class="p">(</span><span class="n">saturate</span><span class="p">(</span><span class="n">dot</span><span class="p">(</span><span class="n">worldNormal</span><span class="p">,</span><span class="n">halfDir</span><span class="p">)),</span><span class="n">_Gloss</span><span class="p">);</span>
+                <span class="n">col</span> <span class="o">=</span> <span class="n">fixed4</span><span class="p">(</span><span class="n">ambient</span><span class="o">+</span><span class="n">diffuse</span><span class="o">+</span><span class="n">specular</span><span class="p">,</span><span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span>
+                <span class="k">return</span> <span class="n">col</span><span class="p">;</span>
+            <span class="p">}</span>
+            <span class="n">ENDCG</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+<p>使用单张纹理效果图
+<img src="/assets/img/sample/2020-04-27-singletex.jpg" alt="单张纹理" /></p>
+:ET

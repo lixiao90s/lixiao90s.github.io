@@ -1,0 +1,67 @@
+I"$<p>本文内容主要参考 《Unity shader入门精要》一书，旨在总结所学知识与加深个人理解</p>
+
+<h2 id="透明度测试alpha-test">透明度测试(Alpha Test)</h2>
+<p>当片元的透明度小于某个阈值时，对应片元就会被舍弃，被舍弃的片元不会再进行任何处理，不会对颜色缓冲产生任何影响，当片元透明度大于等于这个阈值的
+时候，就会按照普通不透明的物体处理方式来处理，进行深度测试，深度写入等。透明度测试无法得到真正的半透明效果。</p>
+
+<h2 id="透明度混合alpha-blend">透明度混合(Alpha Blend)</h2>
+<p>使用当前片元的透明度作为混合银子，与已经存储在颜色缓冲中的颜色进行混合，得到新的颜色。但是透明度混合需要关闭深度写入，关闭深度写入破坏了深度
+缓冲的工作机制，因此渲染渲染顺序将会变得非常重要。透明度混合只关闭了深度写入，没有关闭深度测试，当使用透明度混合渲染一个片元时，还是会比较
+它的深度值与当前缓冲中的深度值，如果它的深度值距离摄像机更远，那么就不会再进行混合操作。对于透明度混合来说，深度缓冲时只读的。</p>
+
+<h2 id="深度缓冲depth-bufferz-buffer">深度缓冲(depth buffer,z-buffer)</h2>
+<p>深度缓冲记录颜色缓冲区中相对应像素点在3D世界中距离摄像机的远近，通过深度缓冲，我们可以进行深度测试，从而确定遮挡关系。有了深度缓冲后，渲染顺序
+就不那么重要了，可以根据深度渲染物体。上面提及的透明度混合的时候会关闭深度写入，因此关闭深度写入时，渲染顺序会确定物体渲染的先后顺序，关闭后，
+渲染顺序会变得非常重要。</p>
+
+<h2 id="深度测试ztest-深度写入zwrite">深度测试(ZTest) 深度写入(ZWrite)</h2>
+<p>如果开启了看深度测试，GPU会把该片元的深度值和已经存在于深度缓冲区中的深度值进行比较。如果该片元通过了深度测试，开发者可以指定是否用这个片元
+的深度值覆盖掉原有的深度值，这个是通过开启/关闭深度写入来做到。
+这里回顾之前渲染流水线的知识，可以加深理解，这部分的操作都在渲染流水线的逐片元操作中。通过流程图可以理解，这部分的工作流程和再流水线中的作用。
+逐片元在流水线最后，这里会合并输出。
+<img src="/assets/img/sample/gpu_pipeline.png" alt="gpu流水线" /><br />
+逐片元操作<br />
+<img src="/assets/img/sample/per_frag.png" alt="逐片元操作" />  <br />
+深度写入和深度测试工作流程图
+<img src="/assets/img/sample/workflow.png" alt="深度写入和深度测试" />  <br />
+混合流程工作流程图
+<img src="/assets/img/sample/blend_workflow.png" alt="混合流程" /></p>
+
+<h2 id="渲染顺序的排序">渲染顺序的排序</h2>
+<p>渲染引擎一般会对物体进行顺序。</p>
+<ul>
+  <li>先渲染所有不透明物体，并开启它们的深度测试和深度写入。</li>
+  <li>把半透明物体按它们距离摄像机的远近进行排序，然后按照从后往前的顺序渲染这些半透明物体，并开启它们的深度测试，但关闭深度写入。</li>
+</ul>
+
+<h2 id="渲染队列">渲染队列</h2>
+<p>Unity为了解决渲染顺序问提供了渲染队列（render queue），用SubShader的Queue标签决定我们模型将归于哪个渲染队列。
+<img src="/assets/img/sample/render_queue.jpg" alt="渲染队列" /></p>
+
+<p>透明度测试</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+</pre></td><td class="rouge-code"><pre><span class="n">SubShader</span><span class="p">{</span>
+	<span class="n">Tags</span><span class="p">{</span><span class="s">"Queue"</span><span class="o">=</span><span class="s">"AlphaTest"</span><span class="p">}</span>
+	<span class="n">Pass</span><span class="p">{</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+<p>透明度混合</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+</pre></td><td class="rouge-code"><pre><span class="n">SubShader</span><span class="p">{</span>
+	<span class="n">Tags</span><span class="p">{</span><span class="s">"Queue"</span><span class="o">=</span><span class="s">"Transparent"</span><span class="p">}</span>
+	<span class="n">Pass</span><span class="p">{</span>
+		<span class="n">Zwrite</span> <span class="n">Off</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+:ET

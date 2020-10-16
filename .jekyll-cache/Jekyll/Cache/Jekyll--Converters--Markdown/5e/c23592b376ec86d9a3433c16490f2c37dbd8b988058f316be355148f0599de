@@ -1,0 +1,189 @@
+I"A<ul id="markdown-toc">
+  <li><a href="#需求" id="markdown-toc-需求">需求</a></li>
+  <li><a href="#实现" id="markdown-toc-实现">实现</a></li>
+  <li><a href="#效果" id="markdown-toc-效果">效果</a></li>
+</ul>
+
+<h2 id="需求">需求</h2>
+
+<p>在项目接近尾声的时候，由于本地化的差异，导致很多ui超过了显示框，这时候运营方提出
+需要在部分地方加上滚动，当文字超过显示的框的时候，自动滚动。由于项目已经接近尾声，所以务必
+改动要小。在不改变UI结构，以及方便策划快速更改的情况下，开发的组件。</p>
+
+<h2 id="实现">实现</h2>
+
+<p>设置如图</p>
+
+<p><img src="/assets/NGUItext.png" alt="设置" /></p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+</pre></td><td class="rouge-code"><pre>using System;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+/// &lt;summary&gt;
+/// 文字走马灯效果
+/// &lt;/summary&gt;
+[RequireComponent(typeof(UIPanel))]
+[RequireComponent(typeof(UILabel))]
+public class ScrollLabelNew : MonoBehaviour
+{
+   private UIPanel panel;
+   private UILabel label;
+
+   Vector2 panel_offset;
+   private Vector3 start_pos;
+   public float speedx;
+   public float offset;
+   float mtime;
+   public float stop_time;
+   
+   private void Awake()
+   {
+      panel = GetComponent&lt;UIPanel&gt;();
+      label = GetComponent&lt;UILabel&gt;();
+      panel_offset = panel.clipOffset;
+      start_pos = label.transform.localPosition;
+   }
+
+   private void OnEnable()
+   {
+      int max_depth = 0;
+      foreach (UIPanel panel in transform.GetComponentsInParent&lt;UIPanel&gt;())
+      {
+         if (panel.depth &gt; max_depth)
+         {
+            max_depth = panel.depth;
+         }
+      }
+      panel.depth = max_depth+1;
+   }
+
+   private void Update()
+   {
+      if (panel == null || label == null)
+      {
+         return;
+      }
+      if (speedx &lt; 0)
+      {
+         if (label.worldCorners[3].x &lt; panel.worldCorners[3].x+offset)
+         {
+            if (mtime &gt; 0)
+            {
+               mtime = mtime - Time.deltaTime;
+               return;
+            }
+
+            mtime = stop_time;
+            label.transform.localPosition = start_pos;
+            panel.clipOffset = panel_offset;
+         }
+      }
+      else
+      {
+         if (label.worldCorners[3].x &gt; panel.worldCorners[3].x+offset)
+         {
+            if (mtime &gt; 0)
+            {
+               mtime = mtime - Time.deltaTime;
+               return;
+            }
+
+            mtime = stop_time;
+            label.transform.localPosition = start_pos;
+            panel.clipOffset = panel_offset;
+         }
+      }
+      label.transform.localPosition += new Vector3(speedx * Time.deltaTime, 0, 0);
+      panel.clipOffset+=new Vector2(-speedx * Time.deltaTime, 0);
+   }
+}    
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<h2 id="效果">效果</h2>
+<p><img src="/assets/Feb-24-2020-21-10-04.gif" alt="创建shader菜单" /></p>
+:ET

@@ -1,0 +1,1458 @@
+I"Z<h2 id="树与数组链表的比较">树与数组链表的比较</h2>
+
+<h3 id="数组存储方式的分析">数组存储方式的分析</h3>
+<ul>
+  <li>优点：通过下标访问元素，速度快。对于有序数组，还可以使用二分查找提高检索速度</li>
+  <li>缺点： 如果要检索具体某个值，或者插入值，会整体移动，效率低</li>
+</ul>
+
+<h3 id="链式存储方式的分析">链式存储方式的分析</h3>
+<ul>
+  <li>优点：插入，删除效率较高</li>
+  <li>缺点：检索效率低</li>
+</ul>
+
+<h3 id="树存储方式分析">树存储方式分析</h3>
+<p>提高数据存储，读取的效率，比如利用二叉排序树，即保证了数据查询的效率，也保证了数据修改，插入，删除的效率</p>
+
+<h2 id="二叉树">二叉树</h2>
+
+<ul>
+  <li>每个节点最多只有两个子节点的一种形式称为二叉树</li>
+  <li>二叉树的子节点分为左节点和右节点</li>
+  <li>如果该二叉树的所有叶子节点都在最后一层，并且节点总数2^n-1 n为层数，则我们称为满二叉树</li>
+  <li>如果该二叉树所有叶子节点都在最后一层或者倒数第二次，而且最后一层的叶子节点在左边连续，倒数第二层的叶子节点在右边连续，我们称为完全二叉树</li>
+</ul>
+
+<h3 id="相关概念">相关概念</h3>
+
+<ul>
+  <li>节点</li>
+  <li>根节点</li>
+  <li>父节点</li>
+  <li>子节点</li>
+  <li>叶子节点（没有子节点）</li>
+  <li>节点的权</li>
+  <li>路径（从root节点找到该节点的路线）</li>
+  <li>层</li>
+  <li>子树</li>
+  <li>树的高度(最大层数)</li>
+  <li>森林（多颗子树构成森林）</li>
+</ul>
+
+<p><img src="/assets/img/sample/tree.png" alt="二叉树概念" /></p>
+
+<h3 id="遍历">遍历</h3>
+
+<p>二叉树遍历（父节点输出位置对应了 前序 中序 后序 ，左子树始终比右子树先输出）</p>
+<ul>
+  <li>前序遍历： 先输出父节点，再遍历左子树和右子树</li>
+  <li>中序遍历：先遍历左子树，再输出父节点，再遍历右子树</li>
+  <li>后续遍历：先遍历左子树，再遍历右子树，最后输出父节点</li>
+</ul>
+
+<p>查询与删除遍历类似</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193
+194
+195
+196
+197
+198
+199
+200
+201
+202
+203
+204
+205
+206
+207
+208
+209
+210
+211
+212
+213
+214
+215
+216
+217
+218
+219
+220
+221
+222
+223
+224
+225
+226
+227
+228
+229
+230
+231
+232
+233
+234
+235
+236
+237
+238
+239
+240
+241
+242
+243
+244
+245
+246
+247
+248
+249
+250
+251
+252
+253
+254
+255
+256
+257
+258
+259
+260
+261
+262
+263
+264
+265
+266
+267
+268
+269
+270
+271
+272
+273
+274
+275
+276
+277
+278
+279
+280
+281
+282
+283
+284
+285
+286
+287
+288
+289
+290
+291
+292
+293
+294
+295
+296
+297
+298
+299
+300
+301
+</pre></td><td class="rouge-code"><pre><span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="nc">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="nc">HeroTree</span> <span class="n">heroTree</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">HeroTree</span><span class="o">();</span>
+        <span class="c1">//创建需要的结点</span>
+        <span class="nc">HeroTreeNode</span> <span class="n">root</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">HeroTreeNode</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="s">"宋江"</span><span class="o">);</span>
+        <span class="nc">HeroTreeNode</span> <span class="n">node2</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">HeroTreeNode</span><span class="o">(</span><span class="mi">2</span><span class="o">,</span> <span class="s">"吴用"</span><span class="o">);</span>
+        <span class="nc">HeroTreeNode</span> <span class="n">node3</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">HeroTreeNode</span><span class="o">(</span><span class="mi">3</span><span class="o">,</span> <span class="s">"卢俊义"</span><span class="o">);</span>
+        <span class="nc">HeroTreeNode</span> <span class="n">node4</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">HeroTreeNode</span><span class="o">(</span><span class="mi">4</span><span class="o">,</span> <span class="s">"林冲"</span><span class="o">);</span>
+        <span class="nc">HeroTreeNode</span> <span class="n">node5</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">HeroTreeNode</span><span class="o">(</span><span class="mi">5</span><span class="o">,</span> <span class="s">"关胜"</span><span class="o">);</span>
+
+        <span class="c1">//说明，我们先手动创建该二叉树，后面我们学习递归的方式创建二叉树</span>
+        <span class="n">root</span><span class="o">.</span><span class="na">setLeft</span><span class="o">(</span><span class="n">node2</span><span class="o">);</span>
+        <span class="n">root</span><span class="o">.</span><span class="na">setRight</span><span class="o">(</span><span class="n">node3</span><span class="o">);</span>
+        <span class="n">node3</span><span class="o">.</span><span class="na">setRight</span><span class="o">(</span><span class="n">node4</span><span class="o">);</span>
+        <span class="n">node3</span><span class="o">.</span><span class="na">setLeft</span><span class="o">(</span><span class="n">node5</span><span class="o">);</span>
+        <span class="n">heroTree</span><span class="o">.</span><span class="na">setRoot</span><span class="o">(</span><span class="n">root</span><span class="o">);</span>
+
+        <span class="n">heroTree</span><span class="o">.</span><span class="na">DelNode</span><span class="o">(</span><span class="mi">2</span><span class="o">);</span>
+        <span class="c1">//测试</span>
+		<span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"前序遍历"</span><span class="o">);</span> <span class="c1">// 1,2,3,5,4</span>
+        <span class="n">heroTree</span><span class="o">.</span><span class="na">preOrder</span><span class="o">();</span>
+<span class="c1">//</span>
+<span class="c1">//        //测试</span>
+<span class="c1">//		System.out.println("中序遍历");</span>
+<span class="c1">//		heroTree.midOrder(); // 2,1,5,3,4</span>
+<span class="c1">//</span>
+<span class="c1">//		System.out.println("后序遍历");</span>
+<span class="c1">//        heroTree.postOrder(); // 2,5,4,3,1</span>
+
+<span class="c1">//        HeroTreeNode node = heroTree.PostSearch(5);</span>
+<span class="c1">//        if(node!=null)</span>
+<span class="c1">//        {</span>
+<span class="c1">//            node.ToString();</span>
+<span class="c1">//        }else {</span>
+<span class="c1">//            System.out.println("target node is null");</span>
+<span class="c1">//        }</span>
+
+
+    <span class="o">}</span>
+
+<span class="o">}</span>
+
+<span class="kd">class</span> <span class="nc">HeroTree</span><span class="o">{</span>
+    <span class="nc">HeroTreeNode</span> <span class="n">root</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setRoot</span><span class="o">(</span><span class="nc">HeroTreeNode</span> <span class="n">root</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">root</span><span class="o">=</span><span class="n">root</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">preOrder</span><span class="o">()</span>
+    <span class="o">{</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">root</span><span class="o">!=</span><span class="kc">null</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="n">root</span><span class="o">.</span><span class="na">PreOrder</span><span class="o">();</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">midOrder</span><span class="o">()</span>
+    <span class="o">{</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">root</span><span class="o">!=</span><span class="kc">null</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="n">root</span><span class="o">.</span><span class="na">MiddleOrder</span><span class="o">();</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">postOrder</span><span class="o">()</span>
+    <span class="o">{</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">root</span><span class="o">!=</span><span class="kc">null</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="n">root</span><span class="o">.</span><span class="na">PostOrder</span><span class="o">();</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="c1">//</span>
+    <span class="kd">public</span> <span class="nc">HeroTreeNode</span> <span class="nf">PreSearch</span><span class="o">(</span><span class="kt">int</span> <span class="n">id</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">root</span><span class="o">!=</span><span class="kc">null</span><span class="o">)</span>
+        <span class="o">{</span>
+           <span class="k">return</span> <span class="n">root</span><span class="o">.</span><span class="na">PreSearch</span><span class="o">(</span><span class="n">id</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="nc">HeroTreeNode</span> <span class="nf">MidSearch</span><span class="o">(</span><span class="kt">int</span> <span class="n">id</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">root</span><span class="o">!=</span><span class="kc">null</span><span class="o">)</span>
+        <span class="o">{</span>
+           <span class="k">return</span> <span class="n">root</span><span class="o">.</span><span class="na">MidSearch</span><span class="o">(</span><span class="n">id</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="nc">HeroTreeNode</span> <span class="nf">PostSearch</span><span class="o">(</span><span class="kt">int</span> <span class="n">id</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">root</span><span class="o">!=</span><span class="kc">null</span><span class="o">)</span>
+        <span class="o">{</span>
+          <span class="k">return</span>  <span class="n">root</span><span class="o">.</span><span class="na">PostSearch</span><span class="o">(</span><span class="n">id</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="c1">//删除节点</span>
+
+    <span class="cm">/**
+     * 1.如果是root则置空
+     * 2.判断左子节点是否是目标
+     * 3.判断右子节点是否是目标
+     * 4.1-3不满足，则递归左子节点
+     * 5.1-4不满足，则递归右子节点
+     * @param id 待删除节点
+     */</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">DelNode</span><span class="o">(</span><span class="kt">int</span> <span class="n">id</span><span class="o">)</span>
+    <span class="o">{</span>
+       <span class="k">if</span><span class="o">(</span><span class="n">root</span><span class="o">==</span><span class="kc">null</span><span class="o">)</span>
+       <span class="o">{</span>
+           <span class="k">return</span><span class="o">;</span>
+       <span class="o">}</span>
+       <span class="nc">DelNode</span><span class="o">(</span><span class="n">root</span><span class="o">,</span><span class="n">id</span><span class="o">);</span>
+
+    <span class="o">}</span>
+
+    <span class="c1">//删除节点</span>
+    <span class="kt">void</span> <span class="nf">DelNode</span><span class="o">(</span><span class="nc">HeroTreeNode</span> <span class="n">node</span><span class="o">,</span><span class="kt">int</span> <span class="n">id</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">node</span><span class="o">.</span><span class="na">id</span><span class="o">==</span><span class="n">id</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="n">node</span><span class="o">=</span><span class="kc">null</span><span class="o">;</span>
+            <span class="k">return</span><span class="o">;</span>
+        <span class="o">}</span><span class="k">else</span> <span class="k">if</span><span class="o">(</span><span class="n">node</span><span class="o">.</span><span class="na">left</span><span class="o">!=</span><span class="kc">null</span> <span class="o">&amp;&amp;</span> <span class="n">node</span><span class="o">.</span><span class="na">left</span><span class="o">.</span><span class="na">id</span><span class="o">==</span><span class="n">id</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="n">node</span><span class="o">.</span><span class="na">left</span><span class="o">=</span><span class="kc">null</span><span class="o">;</span>
+            <span class="k">return</span><span class="o">;</span>
+        <span class="o">}</span><span class="k">else</span> <span class="k">if</span><span class="o">(</span><span class="n">node</span><span class="o">.</span><span class="na">right</span><span class="o">!=</span><span class="kc">null</span><span class="o">&amp;&amp;</span><span class="n">node</span><span class="o">.</span><span class="na">right</span><span class="o">.</span><span class="na">id</span><span class="o">==</span><span class="n">id</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="n">node</span><span class="o">.</span><span class="na">right</span><span class="o">=</span><span class="kc">null</span><span class="o">;</span>
+            <span class="k">return</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">node</span><span class="o">.</span><span class="na">left</span><span class="o">!=</span><span class="kc">null</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="nc">DelNode</span><span class="o">(</span><span class="n">node</span><span class="o">.</span><span class="na">left</span><span class="o">,</span><span class="n">id</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">node</span><span class="o">.</span><span class="na">right</span><span class="o">!=</span><span class="kc">null</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="nc">DelNode</span><span class="o">(</span><span class="n">node</span><span class="o">.</span><span class="na">right</span><span class="o">,</span><span class="n">id</span><span class="o">);</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+
+<span class="o">}</span>
+
+<span class="kd">class</span> <span class="nc">HeroTreeNode</span><span class="o">{</span>
+    <span class="kd">public</span> <span class="kt">int</span> <span class="n">id</span><span class="o">;</span>
+    <span class="kd">public</span> <span class="nc">String</span> <span class="n">name</span><span class="o">;</span>
+    <span class="c1">//左子节点</span>
+    <span class="nc">HeroTreeNode</span> <span class="n">left</span><span class="o">;</span>
+    <span class="c1">//右子几点</span>
+    <span class="nc">HeroTreeNode</span> <span class="n">right</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setLeft</span><span class="o">(</span><span class="nc">HeroTreeNode</span> <span class="n">node</span><span class="o">)</span>
+    <span class="o">{</span><span class="n">left</span><span class="o">=</span><span class="n">node</span><span class="o">;}</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setRight</span><span class="o">(</span><span class="nc">HeroTreeNode</span> <span class="n">node</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="n">right</span><span class="o">=</span><span class="n">node</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="nf">HeroTreeNode</span><span class="o">(</span><span class="kt">int</span> <span class="n">id</span><span class="o">,</span><span class="nc">String</span> <span class="n">name</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">id</span><span class="o">=</span><span class="n">id</span><span class="o">;</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">name</span><span class="o">=</span><span class="n">name</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">ToString</span><span class="o">()</span>
+    <span class="o">{</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"id:"</span><span class="o">+</span><span class="n">id</span><span class="o">+</span><span class="s">" name:"</span><span class="o">+</span><span class="n">name</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="cm">/**
+     * 前序遍历 根节点 左节点 右节点
+     */</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">PreOrder</span><span class="o">()</span>
+    <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">ToString</span><span class="o">();</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">left</span><span class="o">!=</span><span class="kc">null</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="n">left</span><span class="o">.</span><span class="na">PreOrder</span><span class="o">();</span>
+        <span class="o">}</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">right</span><span class="o">!=</span><span class="kc">null</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="n">right</span><span class="o">.</span><span class="na">PreOrder</span><span class="o">();</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="cm">/**
+     * 中序遍历 左节点 根节点 右节点
+     */</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">MiddleOrder</span><span class="o">()</span>
+    <span class="o">{</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">left</span><span class="o">!=</span><span class="kc">null</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="n">left</span><span class="o">.</span><span class="na">MiddleOrder</span><span class="o">();</span>
+        <span class="o">}</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">ToString</span><span class="o">();</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">right</span><span class="o">!=</span><span class="kc">null</span><span class="o">)</span>
+
+        <span class="o">{</span>
+            <span class="n">right</span><span class="o">.</span><span class="na">MiddleOrder</span><span class="o">();</span>
+        <span class="o">}</span>
+
+    <span class="o">}</span>
+
+    <span class="cm">/**
+     * 后序遍历 左节点 右节点 根节点
+     */</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">PostOrder</span><span class="o">()</span>
+    <span class="o">{</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">left</span><span class="o">!=</span><span class="kc">null</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="n">left</span><span class="o">.</span><span class="na">PostOrder</span><span class="o">();</span>
+        <span class="o">}</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">right</span><span class="o">!=</span><span class="kc">null</span><span class="o">)</span>
+
+        <span class="o">{</span>
+            <span class="n">right</span><span class="o">.</span><span class="na">PostOrder</span><span class="o">();</span>
+        <span class="o">}</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">ToString</span><span class="o">();</span>
+
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="nc">HeroTreeNode</span> <span class="nf">PreSearch</span><span class="o">(</span><span class="kt">int</span> <span class="n">id</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"PreSearch"</span><span class="o">);</span>
+        <span class="k">if</span><span class="o">(</span><span class="k">this</span><span class="o">.</span><span class="na">id</span><span class="o">==</span><span class="n">id</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="k">return</span> <span class="k">this</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="nc">HeroTreeNode</span> <span class="n">node</span><span class="o">=</span><span class="kc">null</span><span class="o">;</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">left</span><span class="o">!=</span><span class="kc">null</span><span class="o">)</span>
+        <span class="o">{</span>
+           <span class="n">node</span> <span class="o">=</span> <span class="n">left</span><span class="o">.</span><span class="na">PreSearch</span><span class="o">(</span><span class="n">id</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">node</span><span class="o">!=</span><span class="kc">null</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="k">return</span> <span class="n">node</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">right</span><span class="o">!=</span><span class="kc">null</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="n">node</span><span class="o">=</span> <span class="n">right</span><span class="o">.</span><span class="na">PreSearch</span><span class="o">(</span><span class="n">id</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="n">node</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="nc">HeroTreeNode</span> <span class="nf">MidSearch</span><span class="o">(</span><span class="kt">int</span> <span class="n">id</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"MidSearch"</span><span class="o">);</span>
+        <span class="nc">HeroTreeNode</span> <span class="n">node</span><span class="o">=</span><span class="kc">null</span><span class="o">;</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">left</span><span class="o">!=</span><span class="kc">null</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="n">node</span> <span class="o">=</span> <span class="n">left</span><span class="o">.</span><span class="na">MidSearch</span><span class="o">(</span><span class="n">id</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">node</span><span class="o">!=</span><span class="kc">null</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="k">return</span> <span class="n">node</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="k">if</span><span class="o">(</span><span class="k">this</span><span class="o">.</span><span class="na">id</span><span class="o">==</span><span class="n">id</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="k">return</span> <span class="k">this</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">right</span><span class="o">!=</span><span class="kc">null</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="n">node</span><span class="o">=</span> <span class="n">right</span><span class="o">.</span><span class="na">MidSearch</span><span class="o">(</span><span class="n">id</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="n">node</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="nc">HeroTreeNode</span> <span class="nf">PostSearch</span><span class="o">(</span><span class="kt">int</span> <span class="n">id</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"PostSearch"</span><span class="o">);</span>
+        <span class="nc">HeroTreeNode</span> <span class="n">node</span><span class="o">=</span><span class="kc">null</span><span class="o">;</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">left</span><span class="o">!=</span><span class="kc">null</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="n">node</span> <span class="o">=</span> <span class="n">left</span><span class="o">.</span><span class="na">PostSearch</span><span class="o">(</span><span class="n">id</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">node</span><span class="o">!=</span><span class="kc">null</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="k">return</span> <span class="n">node</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">right</span><span class="o">!=</span><span class="kc">null</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="n">node</span><span class="o">=</span> <span class="n">right</span><span class="o">.</span><span class="na">PostSearch</span><span class="o">(</span><span class="n">id</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">node</span><span class="o">!=</span><span class="kc">null</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="k">return</span> <span class="n">node</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="k">if</span><span class="o">(</span><span class="k">this</span><span class="o">.</span><span class="na">id</span><span class="o">==</span><span class="n">id</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="k">return</span> <span class="k">this</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+    <span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<h2 id="顺序存储二叉树">顺序存储二叉树</h2>
+
+<p>应用:堆排序
+从数据存储来看，树的存储方式与数组的存储方式可以互相转换	
+二叉树的节点以数组方式存放，并且仍然可以进行前序遍历，中序遍历，和后序遍历</p>
+
+<p>顺序存储二叉树的特点</p>
+<ul>
+  <li>顺序二叉树通常指考虑完全二叉树</li>
+  <li>第n个元素的左子节点为2*n+1</li>
+  <li>第n个元素的右子节点为2*n+2</li>
+  <li>第n元素的父节点为（n-1）/2
+n表示二叉树的第几个元素（从0开始)</li>
+</ul>
+
+<p><img src="/assets/img/sample/binarysorttree.png" alt="顺序存储二叉树" /></p>
+
+<h2 id="线索化二叉树">线索化二叉树</h2>
+
+<p>1.n个节点的二叉链表中含有2n-(n-1)=n+1个空指针，利用二叉树链表中
+的空指针域，存放指向节点在某种遍历顺序下的前驱和后继节点的指针
+2.这种加上了线索的二叉链表称为线索链表，相应的二叉树称为线索二叉树（Threaded BinaryTree）。根据线索性质的不同，线索二叉树可分为前序线索二叉树，中序线索二叉树和后序线索二叉树三种
+3.一个节点的前一个节点，称为前驱节点
+4.一个节点的后一个节点，称为后继节点</p>
+
+<h3 id="优点">优点</h3>
+<ul>
+  <li>创建线索化二叉树时可以充分利用空指针域</li>
+  <li>通过前驱后继，可以快速索引节点，不必再次遍历</li>
+</ul>
+
+<h3 id="线索化二叉树以及遍历线索化二叉树">线索化二叉树以及遍历线索化二叉树</h3>
+
+<p><img src="/assets/img/sample/threadedTree.png" alt="线索化二叉树" /></p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193
+194
+195
+196
+197
+198
+199
+200
+201
+202
+203
+204
+205
+206
+207
+208
+209
+210
+211
+212
+213
+214
+215
+216
+217
+218
+219
+220
+221
+222
+223
+224
+225
+226
+227
+228
+229
+230
+231
+232
+233
+234
+235
+236
+237
+238
+239
+240
+241
+242
+243
+244
+245
+246
+247
+248
+249
+250
+251
+252
+253
+254
+255
+256
+257
+258
+259
+260
+261
+262
+263
+264
+265
+266
+267
+268
+269
+270
+271
+272
+273
+274
+275
+276
+277
+278
+279
+280
+281
+282
+283
+284
+285
+286
+287
+288
+289
+290
+291
+292
+293
+294
+295
+296
+297
+298
+299
+300
+301
+302
+303
+304
+305
+306
+307
+308
+309
+310
+311
+312
+313
+314
+315
+316
+317
+318
+319
+320
+321
+322
+323
+324
+325
+326
+327
+328
+329
+330
+331
+332
+333
+334
+335
+336
+337
+338
+339
+340
+341
+342
+343
+344
+345
+346
+347
+348
+349
+350
+351
+352
+353
+354
+355
+356
+357
+358
+359
+360
+361
+362
+363
+364
+365
+366
+367
+368
+369
+370
+371
+372
+373
+374
+375
+376
+377
+378
+379
+380
+381
+</pre></td><td class="rouge-code"><pre><span class="kn">package</span> <span class="nn">com.learn.tree</span><span class="o">;</span>
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">BinaryTree</span>
+<span class="o">{</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="nc">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="nc">ThreadedBinaryTree</span> <span class="n">heroTree</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">ThreadedBinaryTree</span><span class="o">();</span>
+        <span class="c1">//创建需要的结点</span>
+        <span class="nc">HeroTreeNode</span> <span class="n">root</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">HeroTreeNode</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="s">"tom"</span><span class="o">);</span>
+        <span class="nc">HeroTreeNode</span> <span class="n">node2</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">HeroTreeNode</span><span class="o">(</span><span class="mi">3</span><span class="o">,</span> <span class="s">"jack"</span><span class="o">);</span>
+        <span class="nc">HeroTreeNode</span> <span class="n">node3</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">HeroTreeNode</span><span class="o">(</span><span class="mi">6</span><span class="o">,</span> <span class="s">"smith"</span><span class="o">);</span>
+        <span class="nc">HeroTreeNode</span> <span class="n">node4</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">HeroTreeNode</span><span class="o">(</span><span class="mi">8</span><span class="o">,</span> <span class="s">"mary"</span><span class="o">);</span>
+        <span class="nc">HeroTreeNode</span> <span class="n">node5</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">HeroTreeNode</span><span class="o">(</span><span class="mi">10</span><span class="o">,</span> <span class="s">"king"</span><span class="o">);</span>
+        <span class="nc">HeroTreeNode</span> <span class="n">node6</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">HeroTreeNode</span><span class="o">(</span><span class="mi">14</span><span class="o">,</span> <span class="s">"dim"</span><span class="o">);</span>
+
+        <span class="c1">//二叉树，后面我们要递归创建, 现在简单处理使用手动创建</span>
+        <span class="n">root</span><span class="o">.</span><span class="na">setLeft</span><span class="o">(</span><span class="n">node2</span><span class="o">);</span>
+        <span class="n">root</span><span class="o">.</span><span class="na">setRight</span><span class="o">(</span><span class="n">node3</span><span class="o">);</span>
+        <span class="n">node2</span><span class="o">.</span><span class="na">setLeft</span><span class="o">(</span><span class="n">node4</span><span class="o">);</span>
+        <span class="n">node2</span><span class="o">.</span><span class="na">setRight</span><span class="o">(</span><span class="n">node5</span><span class="o">);</span>
+        <span class="n">node3</span><span class="o">.</span><span class="na">setLeft</span><span class="o">(</span><span class="n">node6</span><span class="o">);</span>
+
+        <span class="n">heroTree</span><span class="o">.</span><span class="na">setRoot</span><span class="o">(</span><span class="n">root</span><span class="o">);</span>
+        <span class="n">heroTree</span><span class="o">.</span><span class="na">Threaded</span><span class="o">();</span>
+    <span class="c1">//    System.out.print(node2.leftType+" "+node2.rightType);</span>
+        <span class="n">heroTree</span><span class="o">.</span><span class="na">ThreadedList</span><span class="o">();</span>
+    <span class="c1">//   node4.ToString();</span>
+      <span class="c1">// System.out.print(node4.leftType);</span>
+    <span class="c1">//    heroTree.DelNode(2);</span>
+        <span class="c1">//测试</span>
+<span class="c1">//		System.out.println("前序遍历"); // 1,2,3,5,4</span>
+<span class="c1">//        heroTree.preOrder();</span>
+<span class="c1">//</span>
+<span class="c1">//        //测试</span>
+<span class="c1">//		System.out.println("中序遍历");</span>
+<span class="c1">//		heroTree.midOrder(); // 2,1,5,3,4</span>
+<span class="c1">//</span>
+<span class="c1">//		System.out.println("后序遍历");</span>
+<span class="c1">//        heroTree.postOrder(); // 2,5,4,3,1</span>
+
+<span class="c1">//        HeroTreeNode node = heroTree.PostSearch(5);</span>
+<span class="c1">//        if(node!=null)</span>
+<span class="c1">//        {</span>
+<span class="c1">//            node.ToString();</span>
+<span class="c1">//        }else {</span>
+<span class="c1">//            System.out.println("target node is null");</span>
+<span class="c1">//        }</span>
+
+
+    <span class="o">}</span>
+
+<span class="o">}</span>
+
+<span class="kd">class</span> <span class="nc">HeroTree</span><span class="o">{</span>
+    <span class="nc">HeroTreeNode</span> <span class="n">root</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setRoot</span><span class="o">(</span><span class="nc">HeroTreeNode</span> <span class="n">root</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">root</span><span class="o">=</span><span class="n">root</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">preOrder</span><span class="o">()</span>
+    <span class="o">{</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">root</span><span class="o">!=</span><span class="kc">null</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="n">root</span><span class="o">.</span><span class="na">PreOrder</span><span class="o">();</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">midOrder</span><span class="o">()</span>
+    <span class="o">{</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">root</span><span class="o">!=</span><span class="kc">null</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="n">root</span><span class="o">.</span><span class="na">MiddleOrder</span><span class="o">();</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">postOrder</span><span class="o">()</span>
+    <span class="o">{</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">root</span><span class="o">!=</span><span class="kc">null</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="n">root</span><span class="o">.</span><span class="na">PostOrder</span><span class="o">();</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="c1">//</span>
+    <span class="kd">public</span> <span class="nc">HeroTreeNode</span> <span class="nf">PreSearch</span><span class="o">(</span><span class="kt">int</span> <span class="n">id</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">root</span><span class="o">!=</span><span class="kc">null</span><span class="o">)</span>
+        <span class="o">{</span>
+           <span class="k">return</span> <span class="n">root</span><span class="o">.</span><span class="na">PreSearch</span><span class="o">(</span><span class="n">id</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="nc">HeroTreeNode</span> <span class="nf">MidSearch</span><span class="o">(</span><span class="kt">int</span> <span class="n">id</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">root</span><span class="o">!=</span><span class="kc">null</span><span class="o">)</span>
+        <span class="o">{</span>
+           <span class="k">return</span> <span class="n">root</span><span class="o">.</span><span class="na">MidSearch</span><span class="o">(</span><span class="n">id</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="nc">HeroTreeNode</span> <span class="nf">PostSearch</span><span class="o">(</span><span class="kt">int</span> <span class="n">id</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">root</span><span class="o">!=</span><span class="kc">null</span><span class="o">)</span>
+        <span class="o">{</span>
+          <span class="k">return</span>  <span class="n">root</span><span class="o">.</span><span class="na">PostSearch</span><span class="o">(</span><span class="n">id</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="c1">//删除节点</span>
+
+    <span class="cm">/**
+     * 1.如果是root则置空
+     * 2.判断左子节点是否是目标
+     * 3.判断右子节点是否是目标
+     * 4.1-3不满足，则递归左子节点
+     * 5.1-4不满足，则递归右子节点
+     * @param id 待删除节点
+     */</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">DelNode</span><span class="o">(</span><span class="kt">int</span> <span class="n">id</span><span class="o">)</span>
+    <span class="o">{</span>
+       <span class="k">if</span><span class="o">(</span><span class="n">root</span><span class="o">==</span><span class="kc">null</span><span class="o">)</span>
+       <span class="o">{</span>
+           <span class="k">return</span><span class="o">;</span>
+       <span class="o">}</span>
+       <span class="nc">DelNode</span><span class="o">(</span><span class="n">root</span><span class="o">,</span><span class="n">id</span><span class="o">);</span>
+
+    <span class="o">}</span>
+
+    <span class="c1">//删除节点</span>
+    <span class="kt">void</span> <span class="nf">DelNode</span><span class="o">(</span><span class="nc">HeroTreeNode</span> <span class="n">node</span><span class="o">,</span><span class="kt">int</span> <span class="n">id</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">node</span><span class="o">.</span><span class="na">id</span><span class="o">==</span><span class="n">id</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="n">node</span><span class="o">=</span><span class="kc">null</span><span class="o">;</span>
+            <span class="k">return</span><span class="o">;</span>
+        <span class="o">}</span><span class="k">else</span> <span class="k">if</span><span class="o">(</span><span class="n">node</span><span class="o">.</span><span class="na">left</span><span class="o">!=</span><span class="kc">null</span> <span class="o">&amp;&amp;</span> <span class="n">node</span><span class="o">.</span><span class="na">left</span><span class="o">.</span><span class="na">id</span><span class="o">==</span><span class="n">id</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="n">node</span><span class="o">.</span><span class="na">left</span><span class="o">=</span><span class="kc">null</span><span class="o">;</span>
+            <span class="k">return</span><span class="o">;</span>
+        <span class="o">}</span><span class="k">else</span> <span class="k">if</span><span class="o">(</span><span class="n">node</span><span class="o">.</span><span class="na">right</span><span class="o">!=</span><span class="kc">null</span><span class="o">&amp;&amp;</span><span class="n">node</span><span class="o">.</span><span class="na">right</span><span class="o">.</span><span class="na">id</span><span class="o">==</span><span class="n">id</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="n">node</span><span class="o">.</span><span class="na">right</span><span class="o">=</span><span class="kc">null</span><span class="o">;</span>
+            <span class="k">return</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">node</span><span class="o">.</span><span class="na">left</span><span class="o">!=</span><span class="kc">null</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="nc">DelNode</span><span class="o">(</span><span class="n">node</span><span class="o">.</span><span class="na">left</span><span class="o">,</span><span class="n">id</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">node</span><span class="o">.</span><span class="na">right</span><span class="o">!=</span><span class="kc">null</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="nc">DelNode</span><span class="o">(</span><span class="n">node</span><span class="o">.</span><span class="na">right</span><span class="o">,</span><span class="n">id</span><span class="o">);</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+
+<span class="o">}</span>
+
+<span class="kd">class</span> <span class="nc">HeroTreeNode</span><span class="o">{</span>
+    <span class="kd">public</span> <span class="kt">int</span> <span class="n">id</span><span class="o">;</span>
+    <span class="kd">public</span> <span class="nc">String</span> <span class="n">name</span><span class="o">;</span>
+    <span class="c1">//节点类型</span>
+    <span class="kd">public</span> <span class="kt">int</span> <span class="n">leftType</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+    <span class="kd">public</span> <span class="kt">int</span> <span class="n">rightType</span> <span class="o">=</span><span class="mi">0</span> <span class="o">;</span>
+    <span class="c1">//左子节点</span>
+    <span class="nc">HeroTreeNode</span> <span class="n">left</span><span class="o">;</span>
+    <span class="c1">//右子几点</span>
+    <span class="nc">HeroTreeNode</span> <span class="n">right</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setLeft</span><span class="o">(</span><span class="nc">HeroTreeNode</span> <span class="n">node</span><span class="o">)</span>
+    <span class="o">{</span><span class="n">left</span><span class="o">=</span><span class="n">node</span><span class="o">;}</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setRight</span><span class="o">(</span><span class="nc">HeroTreeNode</span> <span class="n">node</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="n">right</span><span class="o">=</span><span class="n">node</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="nf">HeroTreeNode</span><span class="o">(</span><span class="kt">int</span> <span class="n">id</span><span class="o">,</span><span class="nc">String</span> <span class="n">name</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">id</span><span class="o">=</span><span class="n">id</span><span class="o">;</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">name</span><span class="o">=</span><span class="n">name</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">ToString</span><span class="o">()</span>
+    <span class="o">{</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"id:"</span><span class="o">+</span><span class="n">id</span><span class="o">+</span><span class="s">" name:"</span><span class="o">+</span><span class="n">name</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="cm">/**
+     * 前序遍历 根节点 左节点 右节点
+     */</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">PreOrder</span><span class="o">()</span>
+    <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">ToString</span><span class="o">();</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">left</span><span class="o">!=</span><span class="kc">null</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="n">left</span><span class="o">.</span><span class="na">PreOrder</span><span class="o">();</span>
+        <span class="o">}</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">right</span><span class="o">!=</span><span class="kc">null</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="n">right</span><span class="o">.</span><span class="na">PreOrder</span><span class="o">();</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="cm">/**
+     * 中序遍历 左节点 根节点 右节点
+     */</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">MiddleOrder</span><span class="o">()</span>
+    <span class="o">{</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">left</span><span class="o">!=</span><span class="kc">null</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="n">left</span><span class="o">.</span><span class="na">MiddleOrder</span><span class="o">();</span>
+        <span class="o">}</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">ToString</span><span class="o">();</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">right</span><span class="o">!=</span><span class="kc">null</span><span class="o">)</span>
+
+        <span class="o">{</span>
+            <span class="n">right</span><span class="o">.</span><span class="na">MiddleOrder</span><span class="o">();</span>
+        <span class="o">}</span>
+
+    <span class="o">}</span>
+
+    <span class="cm">/**
+     * 后序遍历 左节点 右节点 根节点
+     */</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">PostOrder</span><span class="o">()</span>
+    <span class="o">{</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">left</span><span class="o">!=</span><span class="kc">null</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="n">left</span><span class="o">.</span><span class="na">PostOrder</span><span class="o">();</span>
+        <span class="o">}</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">right</span><span class="o">!=</span><span class="kc">null</span><span class="o">)</span>
+
+        <span class="o">{</span>
+            <span class="n">right</span><span class="o">.</span><span class="na">PostOrder</span><span class="o">();</span>
+        <span class="o">}</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">ToString</span><span class="o">();</span>
+
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="nc">HeroTreeNode</span> <span class="nf">PreSearch</span><span class="o">(</span><span class="kt">int</span> <span class="n">id</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"PreSearch"</span><span class="o">);</span>
+        <span class="k">if</span><span class="o">(</span><span class="k">this</span><span class="o">.</span><span class="na">id</span><span class="o">==</span><span class="n">id</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="k">return</span> <span class="k">this</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="nc">HeroTreeNode</span> <span class="n">node</span><span class="o">=</span><span class="kc">null</span><span class="o">;</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">left</span><span class="o">!=</span><span class="kc">null</span><span class="o">)</span>
+        <span class="o">{</span>
+           <span class="n">node</span> <span class="o">=</span> <span class="n">left</span><span class="o">.</span><span class="na">PreSearch</span><span class="o">(</span><span class="n">id</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">node</span><span class="o">!=</span><span class="kc">null</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="k">return</span> <span class="n">node</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">right</span><span class="o">!=</span><span class="kc">null</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="n">node</span><span class="o">=</span> <span class="n">right</span><span class="o">.</span><span class="na">PreSearch</span><span class="o">(</span><span class="n">id</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="n">node</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="nc">HeroTreeNode</span> <span class="nf">MidSearch</span><span class="o">(</span><span class="kt">int</span> <span class="n">id</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"MidSearch"</span><span class="o">);</span>
+        <span class="nc">HeroTreeNode</span> <span class="n">node</span><span class="o">=</span><span class="kc">null</span><span class="o">;</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">left</span><span class="o">!=</span><span class="kc">null</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="n">node</span> <span class="o">=</span> <span class="n">left</span><span class="o">.</span><span class="na">MidSearch</span><span class="o">(</span><span class="n">id</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">node</span><span class="o">!=</span><span class="kc">null</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="k">return</span> <span class="n">node</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="k">if</span><span class="o">(</span><span class="k">this</span><span class="o">.</span><span class="na">id</span><span class="o">==</span><span class="n">id</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="k">return</span> <span class="k">this</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">right</span><span class="o">!=</span><span class="kc">null</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="n">node</span><span class="o">=</span> <span class="n">right</span><span class="o">.</span><span class="na">MidSearch</span><span class="o">(</span><span class="n">id</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="n">node</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="nc">HeroTreeNode</span> <span class="nf">PostSearch</span><span class="o">(</span><span class="kt">int</span> <span class="n">id</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"PostSearch"</span><span class="o">);</span>
+        <span class="nc">HeroTreeNode</span> <span class="n">node</span><span class="o">=</span><span class="kc">null</span><span class="o">;</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">left</span><span class="o">!=</span><span class="kc">null</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="n">node</span> <span class="o">=</span> <span class="n">left</span><span class="o">.</span><span class="na">PostSearch</span><span class="o">(</span><span class="n">id</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">node</span><span class="o">!=</span><span class="kc">null</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="k">return</span> <span class="n">node</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">right</span><span class="o">!=</span><span class="kc">null</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="n">node</span><span class="o">=</span> <span class="n">right</span><span class="o">.</span><span class="na">PostSearch</span><span class="o">(</span><span class="n">id</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">node</span><span class="o">!=</span><span class="kc">null</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="k">return</span> <span class="n">node</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="k">if</span><span class="o">(</span><span class="k">this</span><span class="o">.</span><span class="na">id</span><span class="o">==</span><span class="n">id</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="k">return</span> <span class="k">this</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+    <span class="o">}</span>
+
+<span class="o">}</span>
+
+<span class="c1">//中序线索化二叉树</span>
+<span class="kd">class</span> <span class="nc">ThreadedBinaryTree</span> <span class="kd">extends</span> <span class="nc">HeroTree</span>
+<span class="o">{</span>
+    <span class="nc">HeroTreeNode</span> <span class="n">pre</span><span class="o">=</span><span class="kc">null</span><span class="o">;</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">Threaded</span><span class="o">()</span>
+    <span class="o">{</span>
+        <span class="nc">Threaded</span><span class="o">(</span><span class="n">root</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">Threaded</span><span class="o">(</span><span class="nc">HeroTreeNode</span> <span class="n">node</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">node</span><span class="o">==</span><span class="kc">null</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="k">return</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="nc">Threaded</span><span class="o">(</span><span class="n">node</span><span class="o">.</span><span class="na">left</span><span class="o">);</span>
+        <span class="c1">//线索化前驱节点</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">node</span><span class="o">.</span><span class="na">left</span><span class="o">==</span><span class="kc">null</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="n">node</span><span class="o">.</span><span class="na">left</span><span class="o">=</span><span class="n">pre</span><span class="o">;</span>
+            <span class="c1">//指定type</span>
+            <span class="n">node</span><span class="o">.</span><span class="na">leftType</span><span class="o">=</span><span class="mi">1</span><span class="o">;</span>
+        <span class="o">}</span>
+
+        <span class="k">if</span><span class="o">(</span><span class="n">pre</span><span class="o">!=</span><span class="kc">null</span> <span class="o">&amp;&amp;</span> <span class="n">pre</span><span class="o">.</span><span class="na">right</span><span class="o">==</span><span class="kc">null</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="n">pre</span><span class="o">.</span><span class="na">right</span><span class="o">=</span><span class="n">node</span><span class="o">;</span>
+            <span class="n">pre</span><span class="o">.</span><span class="na">rightType</span><span class="o">=</span><span class="mi">1</span><span class="o">;</span>
+        <span class="o">}</span>
+
+        <span class="n">pre</span><span class="o">=</span><span class="n">node</span><span class="o">;</span>
+
+        <span class="nc">Threaded</span><span class="o">(</span><span class="n">node</span><span class="o">.</span><span class="na">right</span><span class="o">);</span>
+
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">ThreadedList</span><span class="o">()</span>
+    <span class="o">{</span>
+        <span class="nc">HeroTreeNode</span> <span class="n">node</span> <span class="o">=</span> <span class="n">root</span><span class="o">;</span>
+        <span class="k">while</span><span class="o">(</span><span class="n">node</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="c1">//循环的找到leftType == 1的结点，第一个找到就是8结点</span>
+            <span class="c1">//后面随着遍历而变化,因为当leftType==1时，说明该结点是按照线索化</span>
+            <span class="c1">//处理后的有效结点</span>
+            <span class="k">while</span><span class="o">(</span><span class="n">node</span><span class="o">.</span><span class="na">leftType</span> <span class="o">==</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">node</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="na">left</span><span class="o">;</span>
+            <span class="o">}</span>
+
+            <span class="c1">//打印当前这个结点</span>
+            <span class="n">node</span><span class="o">.</span><span class="na">ToString</span><span class="o">();</span>
+            <span class="c1">//如果当前结点的右指针指向的是后继结点,就一直输出</span>
+            <span class="k">while</span><span class="o">(</span><span class="n">node</span><span class="o">.</span><span class="na">rightType</span> <span class="o">==</span> <span class="mi">1</span><span class="o">)</span> <span class="o">{</span>
+                <span class="c1">//获取到当前结点的后继结点</span>
+                <span class="n">node</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="na">right</span><span class="o">;</span>
+               <span class="n">node</span><span class="o">.</span><span class="na">ToString</span><span class="o">();</span>
+            <span class="o">}</span>
+            <span class="c1">//替换这个遍历的结点</span>
+            <span class="n">node</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="na">right</span><span class="o">;</span>
+
+        <span class="o">}</span>
+    <span class="o">}</span>
+
+<span class="o">}</span>
+
+</pre></td></tr></tbody></table></code></pre></div></div>
+:ET

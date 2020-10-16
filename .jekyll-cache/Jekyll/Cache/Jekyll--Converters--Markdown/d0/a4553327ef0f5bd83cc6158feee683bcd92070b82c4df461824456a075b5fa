@@ -1,0 +1,344 @@
+I"�K<h2 id="栈">栈</h2>
+<ul>
+  <li>先入后出的有序列表 （FILO-First In Last Out）</li>
+  <li>栈是限制线性表中元素的插入和删除 只能在线性表一段进行的特殊线性表，允许插入和删除的一端称为栈顶，另一端为栈底</li>
+  <li>最先放入栈中元素在栈底，最后放入的元素在栈顶，删除则是最后放入的先删除，最先放入的最后删除。</li>
+</ul>
+
+<h2 id="栈涉及到的应用场景">栈涉及到的应用场景</h2>
+<ul>
+  <li>子程序调用：在跳往子程序前，会先将下个指令的地址存放到堆栈中，子程序执行完毕后，从堆栈取出指令地址，回到之前程序</li>
+  <li>处理递归调用：和子程序的调用类似，只是出了存储下一个指令的地址外，也将参数，区域变量等数据存入堆栈</li>
+  <li>表达式的转换 [中缀表达式转后缀表达式]与求值</li>
+  <li>二叉树遍历</li>
+  <li>图形深度优先搜索算法（depth-first）</li>
+</ul>
+
+<h2 id="栈实现的计算器">栈实现的计算器</h2>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+</pre></td><td class="rouge-code"><pre><span class="kn">package</span> <span class="nn">com.learn.stack</span><span class="o">;</span>
+
+<span class="c1">///计算表达式</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">Caculator</span> <span class="o">{</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="nc">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="nc">String</span> <span class="n">exp</span> <span class="o">=</span> <span class="s">"3+2*6-5"</span><span class="o">;</span>
+        <span class="kt">int</span> <span class="n">index</span> <span class="o">=</span><span class="mi">0</span><span class="o">;</span>
+        <span class="nc">Stack</span> <span class="n">numStack</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Stack</span><span class="o">(</span><span class="mi">10</span><span class="o">);</span>
+        <span class="nc">Stack</span> <span class="n">expStack</span> <span class="o">=</span><span class="k">new</span> <span class="nc">Stack</span><span class="o">(</span><span class="mi">10</span><span class="o">);</span>
+        <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="o">;</span><span class="n">i</span><span class="o">&lt;</span><span class="n">exp</span><span class="o">.</span><span class="na">length</span><span class="o">();</span><span class="n">i</span><span class="o">++)</span>
+        <span class="o">{</span>
+            <span class="kt">char</span> <span class="n">c</span> <span class="o">=</span> <span class="n">exp</span><span class="o">.</span><span class="na">substring</span><span class="o">(</span><span class="n">i</span><span class="o">,</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="o">).</span><span class="na">charAt</span><span class="o">(</span><span class="mi">0</span><span class="o">);</span>
+            <span class="c1">//数栈 符号栈</span>
+            <span class="k">if</span><span class="o">(</span><span class="nc">IsOper</span><span class="o">(</span><span class="n">c</span><span class="o">))</span>
+            <span class="o">{</span>
+                <span class="k">if</span><span class="o">(</span><span class="n">expStack</span><span class="o">.</span><span class="na">IsEmpty</span><span class="o">())</span>
+                <span class="o">{</span>
+                    <span class="n">expStack</span><span class="o">.</span><span class="na">Push</span><span class="o">(</span><span class="n">c</span><span class="o">);</span>
+                <span class="o">}</span><span class="k">else</span> <span class="k">if</span><span class="o">(</span><span class="nc">OperPriority</span><span class="o">(</span><span class="n">expStack</span><span class="o">.</span><span class="na">Peek</span><span class="o">())</span> <span class="o">&lt;=</span><span class="nc">OperPriority</span><span class="o">(</span><span class="n">c</span><span class="o">))</span>
+                <span class="o">{</span>
+                    <span class="n">expStack</span><span class="o">.</span><span class="na">Push</span><span class="o">(</span><span class="n">c</span><span class="o">);</span>
+                <span class="o">}</span><span class="k">else</span>
+                <span class="o">{</span>
+                    <span class="kt">int</span> <span class="n">value</span> <span class="o">=</span><span class="nc">Oper</span><span class="o">(</span><span class="n">numStack</span><span class="o">,</span><span class="n">expStack</span><span class="o">);</span>
+                    <span class="n">numStack</span><span class="o">.</span><span class="na">Push</span><span class="o">(</span><span class="n">value</span><span class="o">);</span>
+                    <span class="n">expStack</span><span class="o">.</span><span class="na">Push</span><span class="o">(</span><span class="n">c</span><span class="o">);</span>
+                <span class="o">}</span>
+
+            <span class="o">}</span><span class="k">else</span><span class="o">{</span>
+                <span class="c1">//char 转 int (ascii)</span>
+                <span class="n">numStack</span><span class="o">.</span><span class="na">Push</span><span class="o">(</span><span class="n">c</span><span class="o">-</span><span class="mi">48</span><span class="o">);</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+        <span class="c1">//遍历完成后进行运算</span>
+        <span class="k">while</span><span class="o">(</span><span class="kc">true</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="k">if</span><span class="o">(</span><span class="n">expStack</span><span class="o">.</span><span class="na">IsEmpty</span><span class="o">())</span>
+                <span class="k">break</span><span class="o">;</span>
+            <span class="kt">int</span> <span class="n">value</span> <span class="o">=</span>  <span class="nc">Oper</span><span class="o">(</span><span class="n">numStack</span><span class="o">,</span><span class="n">expStack</span><span class="o">);</span>
+            <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"value="</span><span class="o">+</span><span class="n">value</span><span class="o">);</span>
+            <span class="n">numStack</span><span class="o">.</span><span class="na">Push</span><span class="o">(</span> <span class="n">value</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">"The result of expression %s is %d"</span><span class="o">,</span><span class="n">exp</span><span class="o">,</span><span class="n">numStack</span><span class="o">.</span><span class="na">Peek</span><span class="o">());</span>
+    <span class="o">}</span>
+
+    <span class="c1">//是否为运算符</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">boolean</span> <span class="nf">IsOper</span><span class="o">(</span><span class="kt">int</span> <span class="n">oper</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">oper</span><span class="o">==</span><span class="sc">'*'</span><span class="o">||</span><span class="n">oper</span><span class="o">==</span><span class="sc">'/'</span><span class="o">||</span><span class="n">oper</span><span class="o">==</span><span class="sc">'+'</span><span class="o">||</span><span class="n">oper</span><span class="o">==</span><span class="sc">'-'</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="k">return</span> <span class="kc">true</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="c1">//运算符优先级</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">int</span> <span class="nf">OperPriority</span><span class="o">(</span><span class="kt">int</span> <span class="n">oper</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">oper</span><span class="o">==</span><span class="sc">'*'</span><span class="o">||</span><span class="n">oper</span><span class="o">==</span><span class="sc">'/'</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="k">return</span> <span class="mi">2</span><span class="o">;</span>
+        <span class="o">}</span><span class="k">else</span> <span class="k">if</span> <span class="o">(</span><span class="n">oper</span><span class="o">==</span><span class="sc">'+'</span><span class="o">||</span><span class="n">oper</span><span class="o">==</span><span class="sc">'-'</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="k">return</span> <span class="mi">1</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="mi">0</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="c1">//运算规则</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">int</span> <span class="nf">Oper</span><span class="o">(</span><span class="nc">Stack</span> <span class="n">numStack</span><span class="o">,</span><span class="nc">Stack</span> <span class="n">expStack</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="kt">int</span> <span class="n">num1</span> <span class="o">=</span> <span class="n">numStack</span><span class="o">.</span><span class="na">Pop</span><span class="o">();</span>
+        <span class="kt">int</span> <span class="n">num2</span> <span class="o">=</span> <span class="n">numStack</span><span class="o">.</span><span class="na">Pop</span><span class="o">();</span>
+        <span class="kt">int</span> <span class="n">exp</span> <span class="o">=</span><span class="n">expStack</span><span class="o">.</span><span class="na">Pop</span><span class="o">();</span>
+        <span class="kt">int</span> <span class="n">value</span><span class="o">=</span><span class="mi">0</span><span class="o">;</span>
+        <span class="c1">//num2 先入栈 运算时从左至右，num2在前</span>
+        <span class="k">switch</span> <span class="o">(</span><span class="n">exp</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="k">case</span> <span class="sc">'*'</span><span class="o">:</span>
+                <span class="n">value</span><span class="o">=</span><span class="n">num2</span><span class="o">*</span><span class="n">num1</span><span class="o">;</span>
+                <span class="k">break</span><span class="o">;</span>
+            <span class="k">case</span> <span class="sc">'/'</span><span class="o">:</span>
+                <span class="n">value</span><span class="o">=</span><span class="n">num2</span><span class="o">/</span><span class="n">num1</span><span class="o">;</span>
+                <span class="k">break</span><span class="o">;</span>
+            <span class="k">case</span> <span class="sc">'+'</span><span class="o">:</span>
+                <span class="n">value</span><span class="o">=</span><span class="n">num2</span><span class="o">+</span><span class="n">num1</span><span class="o">;</span>
+                <span class="k">break</span><span class="o">;</span>
+            <span class="k">case</span> <span class="sc">'-'</span><span class="o">:</span>
+                <span class="n">value</span><span class="o">=</span><span class="n">num2</span><span class="o">-</span><span class="n">num1</span><span class="o">;</span>
+                <span class="k">break</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="n">value</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="c1">//数组实现栈</span>
+<span class="kd">class</span> <span class="nc">Stack</span> <span class="o">{</span>
+    <span class="c1">//最大栈</span>
+    <span class="kd">private</span> <span class="kt">int</span> <span class="n">maxSize</span><span class="o">;</span>
+    <span class="c1">//指示当前栈顶位置</span>
+    <span class="kt">int</span> <span class="n">top</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="o">;</span>
+    <span class="kt">int</span><span class="o">[]</span> <span class="n">stack</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="nf">Stack</span><span class="o">(</span><span class="kt">int</span> <span class="n">maxSize</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">maxSize</span> <span class="o">=</span> <span class="n">maxSize</span><span class="o">;</span>
+        <span class="n">stack</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">int</span><span class="o">[</span><span class="n">maxSize</span><span class="o">];</span>
+    <span class="o">}</span>
+
+    <span class="c1">//栈是否已满</span>
+    <span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">IsFull</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">maxSize</span> <span class="o">==</span> <span class="n">top</span> <span class="o">+</span> <span class="mi">1</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="c1">//栈是否是空的</span>
+    <span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">IsEmpty</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">top</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="c1">//出栈</span>
+    <span class="kd">public</span> <span class="kt">int</span> <span class="nf">Pop</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="nc">IsEmpty</span><span class="o">())</span> <span class="o">{</span>
+            <span class="k">throw</span> <span class="k">new</span> <span class="nf">RuntimeException</span><span class="o">(</span><span class="s">"The stack is Empty"</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="kt">int</span> <span class="n">val</span> <span class="o">=</span> <span class="n">stack</span><span class="o">[</span><span class="n">top</span><span class="o">];</span>
+        <span class="n">top</span><span class="o">--;</span>
+        <span class="k">return</span> <span class="n">val</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="c1">//压栈</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">Push</span><span class="o">(</span><span class="kt">int</span> <span class="n">value</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="nc">IsFull</span><span class="o">())</span> <span class="o">{</span>
+            <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"the stack is full push fail"</span><span class="o">);</span>
+            <span class="k">return</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="n">top</span><span class="o">++;</span>
+        <span class="n">stack</span><span class="o">[</span><span class="n">top</span><span class="o">]</span> <span class="o">=</span> <span class="n">value</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="c1">//查询栈顶信息</span>
+    <span class="kd">public</span> <span class="kt">int</span> <span class="nf">Peek</span><span class="o">()</span>
+    <span class="o">{</span>
+        <span class="k">if</span><span class="o">(</span><span class="nc">IsEmpty</span><span class="o">())</span>
+        <span class="o">{</span>
+            <span class="k">throw</span>  <span class="k">new</span> <span class="nf">RuntimeException</span><span class="o">(</span><span class="s">"empty stack"</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="n">stack</span><span class="o">[</span><span class="n">top</span><span class="o">];</span>
+    <span class="o">}</span>
+
+    <span class="c1">//遍历栈</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">Show</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="nc">IsEmpty</span><span class="o">())</span> <span class="o">{</span>
+            <span class="k">return</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">top</span><span class="o">;</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span><span class="o">--)</span> <span class="o">{</span>
+            <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">"stack[%d]=%d\n"</span><span class="o">,</span> <span class="n">i</span><span class="o">,</span> <span class="n">stack</span><span class="o">[</span><span class="n">i</span><span class="o">]);</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+
+
+<span class="o">}</span>
+
+</pre></td></tr></tbody></table></code></pre></div></div>
+:ET

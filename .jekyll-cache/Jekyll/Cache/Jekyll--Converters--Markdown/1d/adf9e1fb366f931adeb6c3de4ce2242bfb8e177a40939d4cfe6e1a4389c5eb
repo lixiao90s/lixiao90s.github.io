@@ -1,0 +1,280 @@
+I"B;<h2 id="哈希表">哈希表</h2>
+
+<p>根据关键码值（key value）而直接进行访问的数据结构
+它通过把关键码值映射到表中一个位置来访问记录，以加快查找的速度，
+这个映射函数叫做散列函数，存放记录的数组叫做散列表。</p>
+
+<p>常见的哈希表结构
+数组+链表
+数组+二叉树</p>
+
+<p>哈希表可以同时管理多条链表</p>
+
+<p><img src="/assets/img/sample/hashmap.png" alt="哈希表" /></p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+</pre></td><td class="rouge-code"><pre><span class="kn">package</span> <span class="nn">com.learn.hash</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.util.Scanner</span><span class="o">;</span>
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">HashTab</span> <span class="o">{</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="nc">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
+
+        <span class="c1">//创建哈希表</span>
+        <span class="nc">HashTable</span> <span class="n">hashTab</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">HashTable</span><span class="o">(</span><span class="mi">7</span><span class="o">);</span>
+
+        <span class="c1">//写一个简单的菜单</span>
+        <span class="nc">String</span> <span class="n">key</span> <span class="o">=</span> <span class="s">""</span><span class="o">;</span>
+        <span class="nc">Scanner</span> <span class="n">scanner</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Scanner</span><span class="o">(</span><span class="nc">System</span><span class="o">.</span><span class="na">in</span><span class="o">);</span>
+        <span class="k">while</span><span class="o">(</span><span class="kc">true</span><span class="o">)</span> <span class="o">{</span>
+            <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"add:  添加雇员"</span><span class="o">);</span>
+            <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"list: 显示雇员"</span><span class="o">);</span>
+            <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"find: 查找雇员"</span><span class="o">);</span>
+            <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"exit: 退出系统"</span><span class="o">);</span>
+
+            <span class="n">key</span> <span class="o">=</span> <span class="n">scanner</span><span class="o">.</span><span class="na">next</span><span class="o">();</span>
+            <span class="k">switch</span> <span class="o">(</span><span class="n">key</span><span class="o">)</span> <span class="o">{</span>
+                <span class="k">case</span> <span class="s">"add"</span><span class="o">:</span>
+                    <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"输入id"</span><span class="o">);</span>
+                    <span class="kt">int</span> <span class="n">id</span> <span class="o">=</span> <span class="n">scanner</span><span class="o">.</span><span class="na">nextInt</span><span class="o">();</span>
+                    <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"输入名字"</span><span class="o">);</span>
+                    <span class="nc">String</span> <span class="n">name</span> <span class="o">=</span> <span class="n">scanner</span><span class="o">.</span><span class="na">next</span><span class="o">();</span>
+                    <span class="c1">//创建 雇员</span>
+                    <span class="nc">Emp</span> <span class="n">emp</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Emp</span><span class="o">(</span><span class="n">id</span><span class="o">,</span> <span class="n">name</span><span class="o">);</span>
+                    <span class="n">hashTab</span><span class="o">.</span><span class="na">Add</span><span class="o">(</span><span class="n">emp</span><span class="o">);</span>
+                    <span class="k">break</span><span class="o">;</span>
+                <span class="k">case</span> <span class="s">"list"</span><span class="o">:</span>
+                    <span class="n">hashTab</span><span class="o">.</span><span class="na">List</span><span class="o">();</span>
+                    <span class="k">break</span><span class="o">;</span>
+                <span class="k">case</span> <span class="s">"find"</span><span class="o">:</span>
+                    <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"请输入要查找的id"</span><span class="o">);</span>
+                    <span class="n">id</span> <span class="o">=</span> <span class="n">scanner</span><span class="o">.</span><span class="na">nextInt</span><span class="o">();</span>
+                    <span class="c1">//hashTab.findEmpById(id);</span>
+                    <span class="k">break</span><span class="o">;</span>
+                <span class="k">case</span> <span class="s">"exit"</span><span class="o">:</span>
+                    <span class="n">scanner</span><span class="o">.</span><span class="na">close</span><span class="o">();</span>
+                    <span class="nc">System</span><span class="o">.</span><span class="na">exit</span><span class="o">(</span><span class="mi">0</span><span class="o">);</span>
+                <span class="k">default</span><span class="o">:</span>
+                    <span class="k">break</span><span class="o">;</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+
+    <span class="o">}</span>
+<span class="o">}</span>
+
+
+<span class="kd">class</span> <span class="nc">HashTable</span><span class="o">{</span>
+    <span class="nc">EmpLinkedList</span><span class="o">[]</span> <span class="n">empLinkedListArray</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="kt">int</span> <span class="n">size</span><span class="o">;</span>
+    <span class="kd">public</span> <span class="nf">HashTable</span><span class="o">(</span><span class="kt">int</span> <span class="n">size</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="n">empLinkedListArray</span> <span class="o">=</span><span class="k">new</span> <span class="nc">EmpLinkedList</span><span class="o">[</span><span class="n">size</span><span class="o">];</span>
+        <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="o">;</span><span class="n">i</span><span class="o">&lt;</span><span class="n">size</span><span class="o">;</span><span class="n">i</span><span class="o">++)</span>
+        <span class="o">{</span>
+            <span class="nc">EmpLinkedList</span> <span class="n">list</span> <span class="o">=</span><span class="k">new</span> <span class="nc">EmpLinkedList</span><span class="o">();</span>
+            <span class="n">empLinkedListArray</span><span class="o">[</span><span class="n">i</span><span class="o">]=</span><span class="n">list</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">size</span><span class="o">=</span><span class="n">size</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">Add</span><span class="o">(</span><span class="nc">Emp</span> <span class="n">value</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="nc">EmpLinkedList</span> <span class="n">list</span> <span class="o">=</span> <span class="n">empLinkedListArray</span><span class="o">[</span><span class="nc">HashFun</span><span class="o">(</span><span class="n">value</span><span class="o">.</span><span class="na">id</span><span class="o">)];</span>
+        <span class="n">list</span><span class="o">.</span><span class="na">Add</span><span class="o">(</span><span class="n">value</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="c1">//散列函数</span>
+    <span class="kd">public</span> <span class="kt">int</span>  <span class="nf">HashFun</span><span class="o">(</span><span class="kt">int</span> <span class="n">id</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="k">return</span> <span class="n">id</span><span class="o">%</span><span class="n">size</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">List</span><span class="o">()</span>
+    <span class="o">{</span>
+        <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="o">;</span><span class="n">i</span><span class="o">&lt;</span><span class="n">empLinkedListArray</span><span class="o">.</span><span class="na">length</span><span class="o">;</span><span class="n">i</span><span class="o">++)</span>
+        <span class="o">{</span>
+            <span class="n">empLinkedListArray</span><span class="o">[</span><span class="n">i</span><span class="o">].</span><span class="na">List</span><span class="o">();</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+
+<span class="o">}</span>
+
+
+<span class="kd">class</span> <span class="nc">Emp</span><span class="o">{</span>
+    <span class="kd">public</span> <span class="kt">int</span> <span class="n">id</span><span class="o">;</span>
+    <span class="kd">public</span> <span class="nc">String</span> <span class="n">name</span><span class="o">;</span>
+    <span class="kd">public</span> <span class="nf">Emp</span><span class="o">(</span><span class="kt">int</span> <span class="n">id</span><span class="o">,</span><span class="nc">String</span> <span class="n">name</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">id</span><span class="o">=</span><span class="n">id</span><span class="o">;</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">name</span><span class="o">=</span><span class="n">name</span><span class="o">;</span>
+    <span class="o">}</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">ToString</span><span class="o">()</span>
+    <span class="o">{</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"id:"</span><span class="o">+</span><span class="n">id</span><span class="o">+</span><span class="s">" name:"</span><span class="o">+</span><span class="n">name</span><span class="o">);</span>
+    <span class="o">}</span>
+    <span class="kd">public</span> <span class="nc">Emp</span> <span class="n">next</span><span class="o">;</span>
+
+<span class="o">}</span>
+
+<span class="kd">class</span> <span class="nc">EmpLinkedList</span>
+<span class="o">{</span>
+    <span class="kd">public</span> <span class="nc">Emp</span> <span class="n">head</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="nf">EmpLinkedList</span><span class="o">()</span>
+    <span class="o">{</span>
+        <span class="n">head</span><span class="o">=</span><span class="k">new</span> <span class="nc">Emp</span><span class="o">(</span><span class="mi">0</span><span class="o">,</span><span class="kc">null</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">Add</span><span class="o">(</span><span class="nc">Emp</span> <span class="n">value</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="nc">Emp</span>  <span class="n">temp</span> <span class="o">=</span> <span class="n">head</span><span class="o">;</span>
+        <span class="k">while</span><span class="o">(</span><span class="n">temp</span><span class="o">.</span><span class="na">next</span><span class="o">!=</span><span class="kc">null</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="n">temp</span> <span class="o">=</span> <span class="n">temp</span><span class="o">.</span><span class="na">next</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="n">temp</span><span class="o">.</span><span class="na">next</span><span class="o">=</span><span class="n">value</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="c1">//list 所有元素</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">List</span><span class="o">()</span>
+    <span class="o">{</span>
+        <span class="nc">Emp</span> <span class="n">temp</span><span class="o">=</span><span class="n">head</span><span class="o">.</span><span class="na">next</span><span class="o">;</span>
+        <span class="k">while</span> <span class="o">(</span><span class="n">temp</span><span class="o">!=</span><span class="kc">null</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="n">temp</span><span class="o">.</span><span class="na">ToString</span><span class="o">();</span>
+            <span class="n">temp</span><span class="o">=</span><span class="n">temp</span><span class="o">.</span><span class="na">next</span><span class="o">;</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+:ET

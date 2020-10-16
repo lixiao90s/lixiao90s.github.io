@@ -1,0 +1,16 @@
+I"V<h2 id="模块">模块</h2>
+<p>AKKA是调度模块化的，它由许多拥有不同特性的JAR组成。</p>
+<ul>
+  <li>akka-actor – 经典角色、类型角色、IO角色等。</li>
+  <li>akka-agent – 代理、整合了Scala的STM特性</li>
+  <li>akka-camel – 整合Apache的Camel</li>
+  <li>akka-cluster – 集群成员管理、弹性路由</li>
+  <li>akka-kernel – AKKA微内核，运行着一个极简应用服务器</li>
+  <li>akka-osgi – 在OSG容器里使用AKKA的基本bundle，包括akka-actor的类</li>
+  <li>akka-osgi-aries – Aries——服务提供角色系统的蓝图</li>
+  <li>akka-remote – 远程角色</li>
+  <li>akka-slf4j – SLF4J Logger (事件总线监听器)</li>
+  <li>akka-testkit – 测试角色系统的工具包Toolkit for testing Actor systems</li>
+  <li>akka-zeromq – 整合ZeroM</li>
+</ul>
+:ET

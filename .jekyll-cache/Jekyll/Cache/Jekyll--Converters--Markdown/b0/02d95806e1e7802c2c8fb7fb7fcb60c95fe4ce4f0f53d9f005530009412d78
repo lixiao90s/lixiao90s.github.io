@@ -1,0 +1,1040 @@
+I";<h2 id="unity中实现屏幕后处理效果">Unity中实现屏幕后处理效果</h2>
+
+<p>在摄像机中添加一个用于屏幕后处理的脚本，在这个脚本中，我们会实现OnRenderImage函数来获取当前屏幕的渲染纹理。然后在调用Graphics.Blit函数使用
+特定的Unity Shader 来对当前图像进行处理，再把返回的渲染纹理显示到屏幕上。</p>
+
+<h2 id="边缘检测">边缘检测</h2>
+
+<h3 id="卷积">卷积</h3>
+
+<p>这里本人并不清楚卷积的意义，参考了CSDN @LianYueBiao的博客
+原文参考链接  <br />
+<a href="https://blog.csdn.net/alvinlyb/article/details/78892252">图像卷积</a></p>
+
+<p><img src="/assets/img/sample/edge_12_3.png" alt="边缘检测" /></p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+</pre></td><td class="rouge-code"><pre><span class="k">using</span> <span class="nn">UnityEngine</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">System.Collections</span><span class="p">;</span>
+
+<span class="k">public</span> <span class="k">class</span> <span class="nc">EdgeDetection</span> <span class="p">:</span> <span class="n">PostEffectsBase</span> <span class="p">{</span>
+
+	<span class="k">public</span> <span class="n">Shader</span> <span class="n">edgeDetectShader</span><span class="p">;</span>
+	<span class="k">private</span> <span class="n">Material</span> <span class="n">edgeDetectMaterial</span> <span class="p">=</span> <span class="k">null</span><span class="p">;</span>
+	<span class="k">public</span> <span class="n">Material</span> <span class="n">material</span> <span class="p">{</span>  
+		<span class="k">get</span> <span class="p">{</span>
+			<span class="n">edgeDetectMaterial</span> <span class="p">=</span> <span class="nf">CheckShaderAndCreateMaterial</span><span class="p">(</span><span class="n">edgeDetectShader</span><span class="p">,</span> <span class="n">edgeDetectMaterial</span><span class="p">);</span>
+			<span class="k">return</span> <span class="n">edgeDetectMaterial</span><span class="p">;</span>
+		<span class="p">}</span>  
+	<span class="p">}</span>
+
+	<span class="p">[</span><span class="nf">Range</span><span class="p">(</span><span class="m">0.0f</span><span class="p">,</span> <span class="m">1.0f</span><span class="p">)]</span>
+	<span class="k">public</span> <span class="kt">float</span> <span class="n">edgesOnly</span> <span class="p">=</span> <span class="m">0.0f</span><span class="p">;</span>
+
+	<span class="k">public</span> <span class="n">Color</span> <span class="n">edgeColor</span> <span class="p">=</span> <span class="n">Color</span><span class="p">.</span><span class="n">black</span><span class="p">;</span>
+	
+	<span class="k">public</span> <span class="n">Color</span> <span class="n">backgroundColor</span> <span class="p">=</span> <span class="n">Color</span><span class="p">.</span><span class="n">white</span><span class="p">;</span>
+
+	<span class="k">void</span> <span class="nf">OnRenderImage</span> <span class="p">(</span><span class="n">RenderTexture</span> <span class="n">src</span><span class="p">,</span> <span class="n">RenderTexture</span> <span class="n">dest</span><span class="p">)</span> <span class="p">{</span>
+		<span class="k">if</span> <span class="p">(</span><span class="n">material</span> <span class="p">!=</span> <span class="k">null</span><span class="p">)</span> <span class="p">{</span>
+			<span class="n">material</span><span class="p">.</span><span class="nf">SetFloat</span><span class="p">(</span><span class="s">"_EdgeOnly"</span><span class="p">,</span> <span class="n">edgesOnly</span><span class="p">);</span>
+			<span class="n">material</span><span class="p">.</span><span class="nf">SetColor</span><span class="p">(</span><span class="s">"_EdgeColor"</span><span class="p">,</span> <span class="n">edgeColor</span><span class="p">);</span>
+			<span class="n">material</span><span class="p">.</span><span class="nf">SetColor</span><span class="p">(</span><span class="s">"_BackgroundColor"</span><span class="p">,</span> <span class="n">backgroundColor</span><span class="p">);</span>
+
+			<span class="n">Graphics</span><span class="p">.</span><span class="nf">Blit</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">dest</span><span class="p">,</span> <span class="n">material</span><span class="p">);</span>
+		<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+			<span class="n">Graphics</span><span class="p">.</span><span class="nf">Blit</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">dest</span><span class="p">);</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+</pre></td><td class="rouge-code"><pre><span class="n">Properties</span> <span class="p">{</span>
+		<span class="n">_MainTex</span> <span class="p">(</span><span class="s">"Base (RGB)"</span><span class="p">,</span> <span class="mi">2</span><span class="n">D</span><span class="p">)</span> <span class="o">=</span> <span class="s">"white"</span> <span class="p">{}</span>
+		<span class="n">_EdgeOnly</span> <span class="p">(</span><span class="s">"Edge Only"</span><span class="p">,</span> <span class="n">Float</span><span class="p">)</span> <span class="o">=</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span>
+		<span class="n">_EdgeColor</span> <span class="p">(</span><span class="s">"Edge Color"</span><span class="p">,</span> <span class="n">Color</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+		<span class="n">_BackgroundColor</span> <span class="p">(</span><span class="s">"Background Color"</span><span class="p">,</span> <span class="n">Color</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+	<span class="p">}</span>
+	<span class="n">SubShader</span> <span class="p">{</span>
+		<span class="n">Pass</span> <span class="p">{</span>  
+			<span class="n">ZTest</span> <span class="n">Always</span> <span class="n">Cull</span> <span class="n">Off</span> <span class="n">ZWrite</span> <span class="n">Off</span>
+			<span class="c1">//Blend One OneMinusSrcAlpha</span>
+			<span class="n">CGPROGRAM</span>
+			
+			<span class="cp">#include "UnityCG.cginc"
+</span>			
+			<span class="cp">#pragma vertex vert  
+</span>			<span class="cp">#pragma fragment fragSobel
+</span>			
+			<span class="n">sampler2D</span> <span class="n">_MainTex</span><span class="p">;</span>  
+			<span class="c1">//xxx_TexelSize是Unity为我们提供访问xxx纹理对应的每个纹素大小。</span>
+			<span class="c1">//例如一张512X512大小的纹理，则该值为1/512</span>
+			<span class="c1">//卷积需要对相邻区域内的纹理进行采样，因此我们需要利用_MainTex_TexelSize来计算各个相邻区域的纹理坐标。</span>
+			<span class="n">uniform</span> <span class="n">half4</span> <span class="n">_MainTex_TexelSize</span><span class="p">;</span>
+			<span class="n">fixed</span> <span class="n">_EdgeOnly</span><span class="p">;</span>
+			<span class="n">fixed4</span> <span class="n">_EdgeColor</span><span class="p">;</span>
+			<span class="n">fixed4</span> <span class="n">_BackgroundColor</span><span class="p">;</span>
+			
+			<span class="k">struct</span> <span class="n">v2f</span> <span class="p">{</span>
+				<span class="n">float4</span> <span class="n">pos</span> <span class="o">:</span> <span class="n">SV_POSITION</span><span class="p">;</span>
+				<span class="n">half2</span> <span class="n">uv</span><span class="p">[</span><span class="mi">9</span><span class="p">]</span> <span class="o">:</span> <span class="n">TEXCOORD0</span><span class="p">;</span>
+			<span class="p">};</span>
+			  
+			<span class="n">v2f</span> <span class="n">vert</span><span class="p">(</span><span class="n">appdata_img</span> <span class="n">v</span><span class="p">)</span> <span class="p">{</span>
+				<span class="n">v2f</span> <span class="n">o</span><span class="p">;</span>
+				<span class="n">o</span><span class="p">.</span><span class="n">pos</span> <span class="o">=</span> <span class="n">UnityObjectToClipPos</span><span class="p">(</span><span class="n">v</span><span class="p">.</span><span class="n">vertex</span><span class="p">);</span>
+				
+				<span class="n">half2</span> <span class="n">uv</span> <span class="o">=</span> <span class="n">v</span><span class="p">.</span><span class="n">texcoord</span><span class="p">;</span>
+				<span class="c1">//Sobel算子采样时对应的9个领域纹理坐标</span>
+				<span class="n">o</span><span class="p">.</span><span class="n">uv</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">uv</span> <span class="o">+</span> <span class="n">_MainTex_TexelSize</span><span class="p">.</span><span class="n">xy</span> <span class="o">*</span> <span class="n">half2</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">);</span>
+				<span class="n">o</span><span class="p">.</span><span class="n">uv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">uv</span> <span class="o">+</span> <span class="n">_MainTex_TexelSize</span><span class="p">.</span><span class="n">xy</span> <span class="o">*</span> <span class="n">half2</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">);</span>
+				<span class="n">o</span><span class="p">.</span><span class="n">uv</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">uv</span> <span class="o">+</span> <span class="n">_MainTex_TexelSize</span><span class="p">.</span><span class="n">xy</span> <span class="o">*</span> <span class="n">half2</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">);</span>
+				<span class="n">o</span><span class="p">.</span><span class="n">uv</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">uv</span> <span class="o">+</span> <span class="n">_MainTex_TexelSize</span><span class="p">.</span><span class="n">xy</span> <span class="o">*</span> <span class="n">half2</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+				<span class="n">o</span><span class="p">.</span><span class="n">uv</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="n">uv</span> <span class="o">+</span> <span class="n">_MainTex_TexelSize</span><span class="p">.</span><span class="n">xy</span> <span class="o">*</span> <span class="n">half2</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+				<span class="n">o</span><span class="p">.</span><span class="n">uv</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span> <span class="o">=</span> <span class="n">uv</span> <span class="o">+</span> <span class="n">_MainTex_TexelSize</span><span class="p">.</span><span class="n">xy</span> <span class="o">*</span> <span class="n">half2</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+				<span class="n">o</span><span class="p">.</span><span class="n">uv</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span> <span class="o">=</span> <span class="n">uv</span> <span class="o">+</span> <span class="n">_MainTex_TexelSize</span><span class="p">.</span><span class="n">xy</span> <span class="o">*</span> <span class="n">half2</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+				<span class="n">o</span><span class="p">.</span><span class="n">uv</span><span class="p">[</span><span class="mi">7</span><span class="p">]</span> <span class="o">=</span> <span class="n">uv</span> <span class="o">+</span> <span class="n">_MainTex_TexelSize</span><span class="p">.</span><span class="n">xy</span> <span class="o">*</span> <span class="n">half2</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+				<span class="n">o</span><span class="p">.</span><span class="n">uv</span><span class="p">[</span><span class="mi">8</span><span class="p">]</span> <span class="o">=</span> <span class="n">uv</span> <span class="o">+</span> <span class="n">_MainTex_TexelSize</span><span class="p">.</span><span class="n">xy</span> <span class="o">*</span> <span class="n">half2</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+						 
+				<span class="k">return</span> <span class="n">o</span><span class="p">;</span>
+			<span class="p">}</span>
+			
+			<span class="c1">//计算亮度值</span>
+			<span class="n">fixed</span> <span class="n">luminance</span><span class="p">(</span><span class="n">fixed4</span> <span class="n">color</span><span class="p">)</span> <span class="p">{</span>
+				<span class="k">return</span>  <span class="mi">0</span><span class="p">.</span><span class="mi">2125</span> <span class="o">*</span> <span class="n">color</span><span class="p">.</span><span class="n">r</span> <span class="o">+</span> <span class="mi">0</span><span class="p">.</span><span class="mi">7154</span> <span class="o">*</span> <span class="n">color</span><span class="p">.</span><span class="n">g</span> <span class="o">+</span> <span class="mi">0</span><span class="p">.</span><span class="mo">0721</span> <span class="o">*</span> <span class="n">color</span><span class="p">.</span><span class="n">b</span><span class="p">;</span> 
+			<span class="p">}</span>
+			
+			<span class="c1">//sobel 算子 滤波？</span>
+			<span class="c1">//计算梯度值</span>
+			<span class="n">half</span> <span class="n">Sobel</span><span class="p">(</span><span class="n">v2f</span> <span class="n">i</span><span class="p">)</span> <span class="p">{</span>
+				<span class="c1">// const half Gx[9] = {-1,  0,  1,</span>
+				<span class="c1">// 						-1,  0,  1,</span>
+				<span class="c1">// 						-1,  0,  1};</span>
+				<span class="c1">// const half Gy[9] = {-1, -1, -1,</span>
+				<span class="c1">// 						0,  0,  0,</span>
+				<span class="c1">// 						1,  1,  1};	</span>
+				<span class="k">const</span> <span class="n">half</span> <span class="n">Gx</span><span class="p">[</span><span class="mi">9</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>
+										<span class="o">-</span><span class="mi">2</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">2</span><span class="p">,</span>
+										<span class="o">-</span><span class="mi">1</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">1</span><span class="p">};</span>
+				<span class="k">const</span> <span class="n">half</span> <span class="n">Gy</span><span class="p">[</span><span class="mi">9</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+										<span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>
+										<span class="mi">1</span><span class="p">,</span>  <span class="mi">2</span><span class="p">,</span>  <span class="mi">1</span><span class="p">};</span>		
+				
+				<span class="n">half</span> <span class="n">texColor</span><span class="p">;</span>
+				<span class="n">half</span> <span class="n">edgeX</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+				<span class="n">half</span> <span class="n">edgeY</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+				<span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">it</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">it</span> <span class="o">&lt;</span> <span class="mi">9</span><span class="p">;</span> <span class="n">it</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+					<span class="n">texColor</span> <span class="o">=</span> <span class="n">luminance</span><span class="p">(</span><span class="n">tex2D</span><span class="p">(</span><span class="n">_MainTex</span><span class="p">,</span> <span class="n">i</span><span class="p">.</span><span class="n">uv</span><span class="p">[</span><span class="n">it</span><span class="p">]));</span>
+					<span class="n">edgeX</span> <span class="o">+=</span> <span class="n">texColor</span> <span class="o">*</span> <span class="n">Gx</span><span class="p">[</span><span class="n">it</span><span class="p">];</span>
+					<span class="n">edgeY</span> <span class="o">+=</span> <span class="n">texColor</span> <span class="o">*</span> <span class="n">Gy</span><span class="p">[</span><span class="n">it</span><span class="p">];</span>
+				<span class="p">}</span>
+				
+				<span class="n">half</span> <span class="n">edge</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">abs</span><span class="p">(</span><span class="n">edgeX</span><span class="p">)</span> <span class="o">-</span> <span class="n">abs</span><span class="p">(</span><span class="n">edgeY</span><span class="p">);</span>
+				
+				<span class="k">return</span> <span class="n">edge</span><span class="p">;</span><span class="c1">//返回梯度值</span>
+			<span class="p">}</span>
+			
+			<span class="n">fixed4</span> <span class="n">fragSobel</span><span class="p">(</span><span class="n">v2f</span> <span class="n">i</span><span class="p">)</span> <span class="o">:</span> <span class="n">SV_Target</span> <span class="p">{</span>
+				<span class="n">half</span> <span class="n">edge</span> <span class="o">=</span> <span class="n">Sobel</span><span class="p">(</span><span class="n">i</span><span class="p">);</span>
+				
+				<span class="n">fixed4</span> <span class="n">withEdgeColor</span> <span class="o">=</span> <span class="n">lerp</span><span class="p">(</span><span class="n">_EdgeColor</span><span class="p">,</span> <span class="n">tex2D</span><span class="p">(</span><span class="n">_MainTex</span><span class="p">,</span> <span class="n">i</span><span class="p">.</span><span class="n">uv</span><span class="p">[</span><span class="mi">4</span><span class="p">]),</span> <span class="n">edge</span><span class="p">);</span>
+				<span class="n">fixed4</span> <span class="n">onlyEdgeColor</span> <span class="o">=</span> <span class="n">lerp</span><span class="p">(</span><span class="n">_EdgeColor</span><span class="p">,</span> <span class="n">_BackgroundColor</span><span class="p">,</span> <span class="n">edge</span><span class="p">);</span>
+				<span class="k">return</span> <span class="n">lerp</span><span class="p">(</span><span class="n">withEdgeColor</span><span class="p">,</span> <span class="n">onlyEdgeColor</span><span class="p">,</span> <span class="n">_EdgeOnly</span><span class="p">);</span>
+ 			<span class="p">}</span>
+			
+			<span class="n">ENDCG</span>
+		<span class="p">}</span> 
+	<span class="p">}</span>
+	<span class="n">FallBack</span> <span class="n">Off</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<h2 id="高斯模糊">高斯模糊</h2>
+
+<p>高斯是一个正方形大小的滤波核，其中每个元素的计算都是基于下面的高斯方程。
+<img src="/assets/img/sample/chart_12_4_1.png" alt="高斯方程" /></p>
+
+<p>\(\sigma\) 是标准方差，一般取值 1，x,y分贝对应了当前位置到卷积核的中心的距离。高斯核的维度越高，模糊的程度越大。使用一个
+NXN的高斯核对图像进行卷积滤波，需要NXNXWXH次采样，其中W H分别对应了图像的宽和高。当N增大时，采样次数会急剧增大。我们可以这个二维
+高斯函数拆成两个一维高斯函数。我们可以使用两个一维的的高斯核先后对图像进行滤波。</p>
+
+<p><img src="/assets/img/sample/chart_12_8.png" alt="高斯方程" /></p>
+
+<p>高斯模糊需要调用两个Pass,第一个pass使用竖直方向一维高斯核进行滤波就，第二个pass使用水平方向一维高斯核进行滤波。</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+</pre></td><td class="rouge-code"><pre><span class="k">using</span> <span class="nn">UnityEngine</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">System.Collections</span><span class="p">;</span>
+
+<span class="k">public</span> <span class="k">class</span> <span class="nc">GaussianBlur</span> <span class="p">:</span> <span class="n">PostEffectsBase</span> <span class="p">{</span>
+
+	<span class="k">public</span> <span class="n">Shader</span> <span class="n">gaussianBlurShader</span><span class="p">;</span>
+	<span class="k">private</span> <span class="n">Material</span> <span class="n">gaussianBlurMaterial</span> <span class="p">=</span> <span class="k">null</span><span class="p">;</span>
+
+	<span class="k">public</span> <span class="n">Material</span> <span class="n">material</span> <span class="p">{</span>  
+		<span class="k">get</span> <span class="p">{</span>
+			<span class="n">gaussianBlurMaterial</span> <span class="p">=</span> <span class="nf">CheckShaderAndCreateMaterial</span><span class="p">(</span><span class="n">gaussianBlurShader</span><span class="p">,</span> <span class="n">gaussianBlurMaterial</span><span class="p">);</span>
+			<span class="k">return</span> <span class="n">gaussianBlurMaterial</span><span class="p">;</span>
+		<span class="p">}</span>  
+	<span class="p">}</span>
+
+	<span class="c1">// Blur iterations - larger number means more blur.</span>
+	<span class="p">[</span><span class="nf">Range</span><span class="p">(</span><span class="m">0</span><span class="p">,</span> <span class="m">4</span><span class="p">)]</span>
+	<span class="k">public</span> <span class="kt">int</span> <span class="n">iterations</span> <span class="p">=</span> <span class="m">3</span><span class="p">;</span>
+	
+	<span class="c1">// Blur spread for each iteration - larger value means more blur</span>
+	<span class="p">[</span><span class="nf">Range</span><span class="p">(</span><span class="m">0.2f</span><span class="p">,</span> <span class="m">3.0f</span><span class="p">)]</span>
+	<span class="k">public</span> <span class="kt">float</span> <span class="n">blurSpread</span> <span class="p">=</span> <span class="m">0.6f</span><span class="p">;</span>
+	
+	<span class="p">[</span><span class="nf">Range</span><span class="p">(</span><span class="m">1</span><span class="p">,</span> <span class="m">8</span><span class="p">)]</span>
+	<span class="k">public</span> <span class="kt">int</span> <span class="n">downSample</span> <span class="p">=</span> <span class="m">2</span><span class="p">;</span>
+	
+	<span class="c1">/// 1st edition: just apply blur</span>
+<span class="c1">//	void OnRenderImage(RenderTexture src, RenderTexture dest) {</span>
+<span class="c1">//		if (material != null) {</span>
+<span class="c1">//			int rtW = src.width;</span>
+<span class="c1">//			int rtH = src.height;</span>
+<span class="c1">//			RenderTexture buffer = RenderTexture.GetTemporary(rtW, rtH, 0);</span>
+<span class="c1">//</span>
+<span class="c1">//			// Render the vertical pass</span>
+<span class="c1">//			Graphics.Blit(src, buffer, material, 0);</span>
+<span class="c1">//			// Render the horizontal pass</span>
+<span class="c1">//			Graphics.Blit(buffer, dest, material, 1);</span>
+<span class="c1">//</span>
+<span class="c1">//			RenderTexture.ReleaseTemporary(buffer);</span>
+<span class="c1">//		} else {</span>
+<span class="c1">//			Graphics.Blit(src, dest);</span>
+<span class="c1">//		}</span>
+<span class="c1">//	} </span>
+
+	<span class="c1">/// 2nd edition: scale the render texture</span>
+<span class="c1">//	void OnRenderImage (RenderTexture src, RenderTexture dest) {</span>
+<span class="c1">//		if (material != null) {</span>
+<span class="c1">//			int rtW = src.width/downSample;</span>
+<span class="c1">//			int rtH = src.height/downSample;</span>
+<span class="c1">//			RenderTexture buffer = RenderTexture.GetTemporary(rtW, rtH, 0);</span>
+<span class="c1">//			buffer.filterMode = FilterMode.Bilinear;</span>
+<span class="c1">//</span>
+<span class="c1">//			// Render the vertical pass</span>
+<span class="c1">//			Graphics.Blit(src, buffer, material, 0);</span>
+<span class="c1">//			// Render the horizontal pass</span>
+<span class="c1">//			Graphics.Blit(buffer, dest, material, 1);</span>
+<span class="c1">//</span>
+<span class="c1">//			RenderTexture.ReleaseTemporary(buffer);</span>
+<span class="c1">//		} else {</span>
+<span class="c1">//			Graphics.Blit(src, dest);</span>
+<span class="c1">//		}</span>
+<span class="c1">//	}</span>
+
+	<span class="c1">/// 3rd edition: use iterations for larger blur</span>
+	<span class="k">void</span> <span class="nf">OnRenderImage</span> <span class="p">(</span><span class="n">RenderTexture</span> <span class="n">src</span><span class="p">,</span> <span class="n">RenderTexture</span> <span class="n">dest</span><span class="p">)</span> <span class="p">{</span>
+		<span class="k">if</span> <span class="p">(</span><span class="n">material</span> <span class="p">!=</span> <span class="k">null</span><span class="p">)</span> <span class="p">{</span>
+			<span class="c1">//降采样，采样是原来的 1/downSample ss</span>
+			<span class="kt">int</span> <span class="n">rtW</span> <span class="p">=</span> <span class="n">src</span><span class="p">.</span><span class="n">width</span><span class="p">/</span><span class="n">downSample</span><span class="p">;</span>
+			<span class="kt">int</span> <span class="n">rtH</span> <span class="p">=</span> <span class="n">src</span><span class="p">.</span><span class="n">height</span><span class="p">/</span><span class="n">downSample</span><span class="p">;</span>
+
+			<span class="n">RenderTexture</span> <span class="n">buffer0</span> <span class="p">=</span> <span class="n">RenderTexture</span><span class="p">.</span><span class="nf">GetTemporary</span><span class="p">(</span><span class="n">rtW</span><span class="p">,</span> <span class="n">rtH</span><span class="p">,</span> <span class="m">0</span><span class="p">);</span>
+			<span class="n">buffer0</span><span class="p">.</span><span class="n">filterMode</span> <span class="p">=</span> <span class="n">FilterMode</span><span class="p">.</span><span class="n">Bilinear</span><span class="p">;</span>
+
+			<span class="n">Graphics</span><span class="p">.</span><span class="nf">Blit</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">buffer0</span><span class="p">);</span>
+
+			<span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="p">=</span> <span class="m">0</span><span class="p">;</span> <span class="n">i</span> <span class="p">&lt;</span> <span class="n">iterations</span><span class="p">;</span> <span class="n">i</span><span class="p">++)</span> <span class="p">{</span>
+				<span class="n">material</span><span class="p">.</span><span class="nf">SetFloat</span><span class="p">(</span><span class="s">"_BlurSize"</span><span class="p">,</span> <span class="m">1.0f</span> <span class="p">+</span> <span class="n">i</span> <span class="p">*</span> <span class="n">blurSpread</span><span class="p">);</span>
+
+				<span class="c1">//分配一块屏幕大小缓冲区</span>
+				<span class="n">RenderTexture</span> <span class="n">buffer1</span> <span class="p">=</span> <span class="n">RenderTexture</span><span class="p">.</span><span class="nf">GetTemporary</span><span class="p">(</span><span class="n">rtW</span><span class="p">,</span> <span class="n">rtH</span><span class="p">,</span> <span class="m">0</span><span class="p">);</span>
+
+				<span class="c1">// Render the vertical pass</span>
+				<span class="n">Graphics</span><span class="p">.</span><span class="nf">Blit</span><span class="p">(</span><span class="n">buffer0</span><span class="p">,</span> <span class="n">buffer1</span><span class="p">,</span> <span class="n">material</span><span class="p">,</span> <span class="m">0</span><span class="p">);</span>
+				<span class="c1">//释放缓冲</span>
+				<span class="n">RenderTexture</span><span class="p">.</span><span class="nf">ReleaseTemporary</span><span class="p">(</span><span class="n">buffer0</span><span class="p">);</span>
+				<span class="n">buffer0</span> <span class="p">=</span> <span class="n">buffer1</span><span class="p">;</span>
+				<span class="n">buffer1</span> <span class="p">=</span> <span class="n">RenderTexture</span><span class="p">.</span><span class="nf">GetTemporary</span><span class="p">(</span><span class="n">rtW</span><span class="p">,</span> <span class="n">rtH</span><span class="p">,</span> <span class="m">0</span><span class="p">);</span>
+
+				<span class="c1">// Render the horizontal pass</span>
+				<span class="n">Graphics</span><span class="p">.</span><span class="nf">Blit</span><span class="p">(</span><span class="n">buffer0</span><span class="p">,</span> <span class="n">buffer1</span><span class="p">,</span> <span class="n">material</span><span class="p">,</span> <span class="m">1</span><span class="p">);</span>
+
+				<span class="n">RenderTexture</span><span class="p">.</span><span class="nf">ReleaseTemporary</span><span class="p">(</span><span class="n">buffer0</span><span class="p">);</span>
+				<span class="n">buffer0</span> <span class="p">=</span> <span class="n">buffer1</span><span class="p">;</span>
+			<span class="p">}</span>
+
+			<span class="n">Graphics</span><span class="p">.</span><span class="nf">Blit</span><span class="p">(</span><span class="n">buffer0</span><span class="p">,</span> <span class="n">dest</span><span class="p">);</span>
+			<span class="n">RenderTexture</span><span class="p">.</span><span class="nf">ReleaseTemporary</span><span class="p">(</span><span class="n">buffer0</span><span class="p">);</span>
+		<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+			<span class="n">Graphics</span><span class="p">.</span><span class="nf">Blit</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">dest</span><span class="p">);</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+</pre></td></tr></tbody></table></code></pre></div></div>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+</pre></td><td class="rouge-code"><pre><span class="n">Properties</span> <span class="p">{</span>
+		<span class="n">_MainTex</span> <span class="p">(</span><span class="s">"Base (RGB)"</span><span class="p">,</span> <span class="mi">2</span><span class="n">D</span><span class="p">)</span> <span class="o">=</span> <span class="s">"white"</span> <span class="p">{}</span>
+		<span class="n">_BlurSize</span> <span class="p">(</span><span class="s">"Blur Size"</span><span class="p">,</span> <span class="n">Float</span><span class="p">)</span> <span class="o">=</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span>
+	<span class="p">}</span>
+	<span class="n">SubShader</span> <span class="p">{</span>
+		<span class="n">CGINCLUDE</span>
+		
+		<span class="cp">#include "UnityCG.cginc"
+</span>		
+		<span class="n">sampler2D</span> <span class="n">_MainTex</span><span class="p">;</span>  
+		<span class="n">half4</span> <span class="n">_MainTex_TexelSize</span><span class="p">;</span>
+		<span class="kt">float</span> <span class="n">_BlurSize</span><span class="p">;</span>
+		  
+		<span class="k">struct</span> <span class="n">v2f</span> <span class="p">{</span>
+			<span class="n">float4</span> <span class="n">pos</span> <span class="o">:</span> <span class="n">SV_POSITION</span><span class="p">;</span>
+			<span class="n">half2</span> <span class="n">uv</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span><span class="o">:</span> <span class="n">TEXCOORD0</span><span class="p">;</span>
+		<span class="p">};</span>
+		  
+		<span class="n">v2f</span> <span class="n">vertBlurVertical</span><span class="p">(</span><span class="n">appdata_img</span> <span class="n">v</span><span class="p">)</span> <span class="p">{</span>
+			<span class="n">v2f</span> <span class="n">o</span><span class="p">;</span>
+			<span class="n">o</span><span class="p">.</span><span class="n">pos</span> <span class="o">=</span> <span class="n">UnityObjectToClipPos</span><span class="p">(</span><span class="n">v</span><span class="p">.</span><span class="n">vertex</span><span class="p">);</span>
+			
+			<span class="n">half2</span> <span class="n">uv</span> <span class="o">=</span> <span class="n">v</span><span class="p">.</span><span class="n">texcoord</span><span class="p">;</span>
+			
+			<span class="n">o</span><span class="p">.</span><span class="n">uv</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">uv</span><span class="p">;</span>
+			<span class="c1">//偏移后的uv</span>
+			<span class="n">o</span><span class="p">.</span><span class="n">uv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">uv</span> <span class="o">+</span> <span class="n">float2</span><span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="n">_MainTex_TexelSize</span><span class="p">.</span><span class="n">y</span> <span class="o">*</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="n">_BlurSize</span><span class="p">;</span>
+			<span class="n">o</span><span class="p">.</span><span class="n">uv</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">uv</span> <span class="o">-</span> <span class="n">float2</span><span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="n">_MainTex_TexelSize</span><span class="p">.</span><span class="n">y</span> <span class="o">*</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="n">_BlurSize</span><span class="p">;</span>
+			<span class="n">o</span><span class="p">.</span><span class="n">uv</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">uv</span> <span class="o">+</span> <span class="n">float2</span><span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="n">_MainTex_TexelSize</span><span class="p">.</span><span class="n">y</span> <span class="o">*</span> <span class="mi">2</span><span class="p">.</span><span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="n">_BlurSize</span><span class="p">;</span>
+			<span class="n">o</span><span class="p">.</span><span class="n">uv</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="n">uv</span> <span class="o">-</span> <span class="n">float2</span><span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="n">_MainTex_TexelSize</span><span class="p">.</span><span class="n">y</span> <span class="o">*</span> <span class="mi">2</span><span class="p">.</span><span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="n">_BlurSize</span><span class="p">;</span>
+					 
+			<span class="k">return</span> <span class="n">o</span><span class="p">;</span>
+		<span class="p">}</span>
+		
+		<span class="n">v2f</span> <span class="n">vertBlurHorizontal</span><span class="p">(</span><span class="n">appdata_img</span> <span class="n">v</span><span class="p">)</span> <span class="p">{</span>
+			<span class="n">v2f</span> <span class="n">o</span><span class="p">;</span>
+			<span class="n">o</span><span class="p">.</span><span class="n">pos</span> <span class="o">=</span> <span class="n">UnityObjectToClipPos</span><span class="p">(</span><span class="n">v</span><span class="p">.</span><span class="n">vertex</span><span class="p">);</span>
+			
+			<span class="n">half2</span> <span class="n">uv</span> <span class="o">=</span> <span class="n">v</span><span class="p">.</span><span class="n">texcoord</span><span class="p">;</span>
+			
+			<span class="n">o</span><span class="p">.</span><span class="n">uv</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">uv</span><span class="p">;</span>
+			<span class="n">o</span><span class="p">.</span><span class="n">uv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">uv</span> <span class="o">+</span> <span class="n">float2</span><span class="p">(</span><span class="n">_MainTex_TexelSize</span><span class="p">.</span><span class="n">x</span> <span class="o">*</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="n">_BlurSize</span><span class="p">;</span>
+			<span class="n">o</span><span class="p">.</span><span class="n">uv</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">uv</span> <span class="o">-</span> <span class="n">float2</span><span class="p">(</span><span class="n">_MainTex_TexelSize</span><span class="p">.</span><span class="n">x</span> <span class="o">*</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="n">_BlurSize</span><span class="p">;</span>
+			<span class="n">o</span><span class="p">.</span><span class="n">uv</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">uv</span> <span class="o">+</span> <span class="n">float2</span><span class="p">(</span><span class="n">_MainTex_TexelSize</span><span class="p">.</span><span class="n">x</span> <span class="o">*</span> <span class="mi">2</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="n">_BlurSize</span><span class="p">;</span>
+			<span class="n">o</span><span class="p">.</span><span class="n">uv</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="n">uv</span> <span class="o">-</span> <span class="n">float2</span><span class="p">(</span><span class="n">_MainTex_TexelSize</span><span class="p">.</span><span class="n">x</span> <span class="o">*</span> <span class="mi">2</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="n">_BlurSize</span><span class="p">;</span>
+					 
+			<span class="k">return</span> <span class="n">o</span><span class="p">;</span>
+		<span class="p">}</span>
+		
+		<span class="n">fixed4</span> <span class="n">fragBlur</span><span class="p">(</span><span class="n">v2f</span> <span class="n">i</span><span class="p">)</span> <span class="o">:</span> <span class="n">SV_Target</span> <span class="p">{</span>
+			<span class="kt">float</span> <span class="n">weight</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">.</span><span class="mi">4026</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">2442</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mo">0545</span><span class="p">};</span>
+			
+			<span class="n">fixed3</span> <span class="n">sum</span> <span class="o">=</span> <span class="n">tex2D</span><span class="p">(</span><span class="n">_MainTex</span><span class="p">,</span> <span class="n">i</span><span class="p">.</span><span class="n">uv</span><span class="p">[</span><span class="mi">0</span><span class="p">]).</span><span class="n">rgb</span> <span class="o">*</span> <span class="n">weight</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+			
+			<span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">it</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="n">it</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">;</span> <span class="n">it</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+				<span class="n">sum</span> <span class="o">+=</span> <span class="n">tex2D</span><span class="p">(</span><span class="n">_MainTex</span><span class="p">,</span> <span class="n">i</span><span class="p">.</span><span class="n">uv</span><span class="p">[</span><span class="n">it</span><span class="o">*</span><span class="mi">2</span><span class="o">-</span><span class="mi">1</span><span class="p">]).</span><span class="n">rgb</span> <span class="o">*</span> <span class="n">weight</span><span class="p">[</span><span class="n">it</span><span class="p">];</span>
+				<span class="n">sum</span> <span class="o">+=</span> <span class="n">tex2D</span><span class="p">(</span><span class="n">_MainTex</span><span class="p">,</span> <span class="n">i</span><span class="p">.</span><span class="n">uv</span><span class="p">[</span><span class="n">it</span><span class="o">*</span><span class="mi">2</span><span class="p">]).</span><span class="n">rgb</span> <span class="o">*</span> <span class="n">weight</span><span class="p">[</span><span class="n">it</span><span class="p">];</span>
+			<span class="p">}</span>
+			
+			<span class="k">return</span> <span class="n">fixed4</span><span class="p">(</span><span class="n">sum</span><span class="p">,</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span>
+		<span class="p">}</span>
+		    
+		<span class="n">ENDCG</span>
+		
+		<span class="n">ZTest</span> <span class="n">Always</span> <span class="n">Cull</span> <span class="n">Off</span> <span class="n">ZWrite</span> <span class="n">Off</span>
+		
+		<span class="n">Pass</span> <span class="p">{</span>
+			<span class="n">NAME</span> <span class="s">"GAUSSIAN_BLUR_VERTICAL"</span>
+			
+			<span class="n">CGPROGRAM</span>
+			  
+			<span class="cp">#pragma vertex vertBlurVertical  
+</span>			<span class="cp">#pragma fragment fragBlur
+</span>			  
+			<span class="n">ENDCG</span>  
+		<span class="p">}</span>
+		
+		<span class="n">Pass</span> <span class="p">{</span>  
+			<span class="n">NAME</span> <span class="s">"GAUSSIAN_BLUR_HORIZONTAL"</span>
+			
+			<span class="n">CGPROGRAM</span>  
+			
+			<span class="cp">#pragma vertex vertBlurHorizontal  
+</span>			<span class="cp">#pragma fragment fragBlur
+</span>			
+			<span class="n">ENDCG</span>
+		<span class="p">}</span>
+	<span class="p">}</span> 
+	<span class="n">FallBack</span> <span class="s">"Diffuse"</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+<p><img src="/assets/img/sample/12_4.png" alt="高斯模糊" /></p>
+
+<h2 id="调整屏幕亮度饱和度对比度">调整屏幕亮度，饱和度，对比度</h2>
+
+<h3 id="基本概念">基本概念</h3>
+
+<p>不清楚屏幕亮度，饱和度，对比度的定义,这里参考了csdn博客，大家可以直接参考 @feilong_csdn<a href="https://blog.csdn.net/feilong_csdn/article/details/82755816">【数字图像处理系列二】基本概念：亮度、对比度、饱和度、锐化、分辨率</a></p>
+
+<h2 id="实现">实现</h2>
+
+<p>屏幕后处理效果基类</p>
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+</pre></td><td class="rouge-code"><pre><span class="k">using</span> <span class="nn">UnityEngine</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">System.Collections</span><span class="p">;</span>
+
+<span class="p">[</span><span class="n">ExecuteInEditMode</span><span class="p">]</span>
+<span class="p">[</span><span class="nf">RequireComponent</span> <span class="p">(</span><span class="k">typeof</span><span class="p">(</span><span class="n">Camera</span><span class="p">))]</span>
+<span class="k">public</span> <span class="k">class</span> <span class="nc">PostEffectsBase</span> <span class="p">:</span> <span class="n">MonoBehaviour</span> <span class="p">{</span>
+
+	<span class="c1">// Called when start</span>
+	<span class="k">protected</span> <span class="k">void</span> <span class="nf">CheckResources</span><span class="p">()</span> <span class="p">{</span>
+		<span class="kt">bool</span> <span class="n">isSupported</span> <span class="p">=</span> <span class="nf">CheckSupport</span><span class="p">();</span>
+		
+		<span class="k">if</span> <span class="p">(</span><span class="n">isSupported</span> <span class="p">==</span> <span class="k">false</span><span class="p">)</span> <span class="p">{</span>
+			<span class="nf">NotSupported</span><span class="p">();</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+
+	<span class="c1">// Called in CheckResources to check support on this platform</span>
+	<span class="k">protected</span> <span class="kt">bool</span> <span class="nf">CheckSupport</span><span class="p">()</span> <span class="p">{</span>
+		<span class="k">if</span> <span class="p">(</span><span class="n">SystemInfo</span><span class="p">.</span><span class="n">supportsImageEffects</span> <span class="p">==</span> <span class="k">false</span> <span class="p">||</span> <span class="n">SystemInfo</span><span class="p">.</span><span class="n">supportsRenderTextures</span> <span class="p">==</span> <span class="k">false</span><span class="p">)</span> <span class="p">{</span>
+			<span class="n">Debug</span><span class="p">.</span><span class="nf">LogWarning</span><span class="p">(</span><span class="s">"This platform does not support image effects or render textures."</span><span class="p">);</span>
+			<span class="k">return</span> <span class="k">false</span><span class="p">;</span>
+		<span class="p">}</span>
+		
+		<span class="k">return</span> <span class="k">true</span><span class="p">;</span>
+	<span class="p">}</span>
+
+	<span class="c1">// Called when the platform doesn't support this effect</span>
+	<span class="k">protected</span> <span class="k">void</span> <span class="nf">NotSupported</span><span class="p">()</span> <span class="p">{</span>
+		<span class="n">enabled</span> <span class="p">=</span> <span class="k">false</span><span class="p">;</span>
+	<span class="p">}</span>
+	
+	<span class="k">protected</span> <span class="k">void</span> <span class="nf">Start</span><span class="p">()</span> <span class="p">{</span>
+		<span class="nf">CheckResources</span><span class="p">();</span>
+	<span class="p">}</span>
+
+	<span class="c1">// 创建material 这里如果不传入material 将会创建一个material 的实例</span>
+	<span class="k">protected</span> <span class="n">Material</span> <span class="nf">CheckShaderAndCreateMaterial</span><span class="p">(</span><span class="n">Shader</span> <span class="n">shader</span><span class="p">,</span> <span class="n">Material</span> <span class="n">material</span><span class="p">)</span> <span class="p">{</span>
+		<span class="k">if</span> <span class="p">(</span><span class="n">shader</span> <span class="p">==</span> <span class="k">null</span><span class="p">)</span> <span class="p">{</span>
+			<span class="k">return</span> <span class="k">null</span><span class="p">;</span>
+		<span class="p">}</span>
+		
+		<span class="k">if</span> <span class="p">(</span><span class="n">shader</span><span class="p">.</span><span class="n">isSupported</span> <span class="p">&amp;&amp;</span> <span class="n">material</span> <span class="p">&amp;&amp;</span> <span class="n">material</span><span class="p">.</span><span class="n">shader</span> <span class="p">==</span> <span class="n">shader</span><span class="p">)</span>
+			<span class="k">return</span> <span class="n">material</span><span class="p">;</span>
+		
+		<span class="k">if</span> <span class="p">(!</span><span class="n">shader</span><span class="p">.</span><span class="n">isSupported</span><span class="p">)</span> <span class="p">{</span>
+			<span class="k">return</span> <span class="k">null</span><span class="p">;</span>
+		<span class="p">}</span>
+		<span class="k">else</span> <span class="p">{</span>
+			<span class="n">material</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">Material</span><span class="p">(</span><span class="n">shader</span><span class="p">);</span>
+			<span class="n">material</span><span class="p">.</span><span class="n">hideFlags</span> <span class="p">=</span> <span class="n">HideFlags</span><span class="p">.</span><span class="n">DontSave</span><span class="p">;</span>
+			<span class="k">if</span> <span class="p">(</span><span class="n">material</span><span class="p">)</span>
+			<span class="p">{</span>
+				<span class="c1">//返回创建的material</span>
+				<span class="k">return</span> <span class="n">material</span><span class="p">;</span>
+			<span class="p">}</span>
+			<span class="k">else</span> 
+				<span class="k">return</span> <span class="k">null</span><span class="p">;</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+</pre></td></tr></tbody></table></code></pre></div></div>
+<p>亮度，对比度，饱和度的实现</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+</pre></td><td class="rouge-code"><pre><span class="k">using</span> <span class="nn">UnityEngine</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">System.Collections</span><span class="p">;</span>
+
+<span class="k">public</span> <span class="k">class</span> <span class="nc">BrightnessSaturationAndContrast</span> <span class="p">:</span> <span class="n">PostEffectsBase</span> <span class="p">{</span>
+
+	<span class="k">public</span> <span class="n">Shader</span> <span class="n">briSatConShader</span><span class="p">;</span>
+	<span class="c1">//可以省略Properties中的属性声明，Properties中声明的属性仅仅为了显示在材质面板中</span>
+	<span class="c1">//对于屏幕特效来说，材质都是临时创建的，这些参数我们会从脚本中直接传递</span>
+	<span class="k">private</span> <span class="n">Material</span> <span class="n">briSatConMaterial</span><span class="p">;</span>
+	<span class="k">public</span> <span class="n">Material</span> <span class="n">material</span> <span class="p">{</span>  
+		<span class="k">get</span> <span class="p">{</span>
+			<span class="n">briSatConMaterial</span> <span class="p">=</span> <span class="nf">CheckShaderAndCreateMaterial</span><span class="p">(</span><span class="n">briSatConShader</span><span class="p">,</span> <span class="n">briSatConMaterial</span><span class="p">);</span>
+			<span class="k">return</span> <span class="n">briSatConMaterial</span><span class="p">;</span>
+		<span class="p">}</span>  
+	<span class="p">}</span>
+
+	<span class="p">[</span><span class="nf">Range</span><span class="p">(</span><span class="m">0.0f</span><span class="p">,</span> <span class="m">3.0f</span><span class="p">)]</span>
+	<span class="k">public</span> <span class="kt">float</span> <span class="n">brightness</span> <span class="p">=</span> <span class="m">1.0f</span><span class="p">;</span>
+
+	<span class="p">[</span><span class="nf">Range</span><span class="p">(</span><span class="m">0.0f</span><span class="p">,</span> <span class="m">3.0f</span><span class="p">)]</span>
+	<span class="k">public</span> <span class="kt">float</span> <span class="n">saturation</span> <span class="p">=</span> <span class="m">1.0f</span><span class="p">;</span>
+
+	<span class="p">[</span><span class="nf">Range</span><span class="p">(</span><span class="m">0.0f</span><span class="p">,</span> <span class="m">3.0f</span><span class="p">)]</span>
+	<span class="k">public</span> <span class="kt">float</span> <span class="n">contrast</span> <span class="p">=</span> <span class="m">1.0f</span><span class="p">;</span>
+
+	<span class="c1">//渲染图像时，检查材质是否可用</span>
+	<span class="k">void</span> <span class="nf">OnRenderImage</span><span class="p">(</span><span class="n">RenderTexture</span> <span class="n">src</span><span class="p">,</span> <span class="n">RenderTexture</span> <span class="n">dest</span><span class="p">)</span> <span class="p">{</span>
+		<span class="k">if</span> <span class="p">(</span><span class="n">material</span> <span class="p">!=</span> <span class="k">null</span><span class="p">)</span> <span class="p">{</span>
+			<span class="n">material</span><span class="p">.</span><span class="nf">SetFloat</span><span class="p">(</span><span class="s">"_Brightness"</span><span class="p">,</span> <span class="n">brightness</span><span class="p">);</span>
+			<span class="n">material</span><span class="p">.</span><span class="nf">SetFloat</span><span class="p">(</span><span class="s">"_Saturation"</span><span class="p">,</span> <span class="n">saturation</span><span class="p">);</span>
+			<span class="n">material</span><span class="p">.</span><span class="nf">SetFloat</span><span class="p">(</span><span class="s">"_Contrast"</span><span class="p">,</span> <span class="n">contrast</span><span class="p">);</span>
+			<span class="c1">//Graphics.Blit 将把第一个参数传递给名为_MainTex的属性，因此必须声明一个_MainTex的纹理属性。</span>
+			<span class="n">Graphics</span><span class="p">.</span><span class="nf">Blit</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">dest</span><span class="p">,</span> <span class="n">material</span><span class="p">);</span>
+		<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+			<span class="n">Graphics</span><span class="p">.</span><span class="nf">Blit</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">dest</span><span class="p">);</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+</pre></td><td class="rouge-code"><pre><span class="n">Properties</span> <span class="p">{</span>
+		<span class="n">_MainTex</span> <span class="p">(</span><span class="s">"Base (RGB)"</span><span class="p">,</span> <span class="mi">2</span><span class="n">D</span><span class="p">)</span> <span class="o">=</span> <span class="s">"white"</span> <span class="p">{}</span>
+		<span class="n">_Brightness</span> <span class="p">(</span><span class="s">"Brightness"</span><span class="p">,</span> <span class="n">Float</span><span class="p">)</span> <span class="o">=</span> <span class="mi">1</span>
+		<span class="n">_Saturation</span><span class="p">(</span><span class="s">"Saturation"</span><span class="p">,</span> <span class="n">Float</span><span class="p">)</span> <span class="o">=</span> <span class="mi">1</span>
+		<span class="n">_Contrast</span><span class="p">(</span><span class="s">"Contrast"</span><span class="p">,</span> <span class="n">Float</span><span class="p">)</span> <span class="o">=</span> <span class="mi">1</span>
+	<span class="p">}</span>
+	<span class="n">SubShader</span> <span class="p">{</span>
+		<span class="n">Pass</span> <span class="p">{</span>  
+			<span class="n">ZTest</span> <span class="n">Always</span> <span class="n">Cull</span> <span class="n">Off</span> <span class="n">ZWrite</span> <span class="n">Off</span>
+			
+			<span class="n">CGPROGRAM</span>  
+			<span class="cp">#pragma vertex vert  
+</span>			<span class="cp">#pragma fragment frag  
+</span>			  
+			<span class="cp">#include "UnityCG.cginc"  
+</span>			  
+			<span class="n">sampler2D</span> <span class="n">_MainTex</span><span class="p">;</span>  
+			<span class="n">half</span> <span class="n">_Brightness</span><span class="p">;</span>
+			<span class="n">half</span> <span class="n">_Saturation</span><span class="p">;</span>
+			<span class="n">half</span> <span class="n">_Contrast</span><span class="p">;</span>
+
+			<span class="c1">// struct appdata_img</span>
+			<span class="c1">// {</span>
+			<span class="c1">// 	float4 vertex : POSITION;</span>
+			<span class="c1">// 	half2 texcoord : TEXCOORD0;</span>
+			<span class="c1">// 	UNITY_VERTEX_INPUT_INSTANCE_ID</span>
+			<span class="c1">// };</span>
+
+			  
+			<span class="k">struct</span> <span class="n">v2f</span> <span class="p">{</span>
+				<span class="n">float4</span> <span class="n">pos</span> <span class="o">:</span> <span class="n">SV_POSITION</span><span class="p">;</span>
+				<span class="n">half2</span> <span class="n">uv</span><span class="o">:</span> <span class="n">TEXCOORD0</span><span class="p">;</span>
+			<span class="p">};</span>
+			  
+			<span class="n">v2f</span> <span class="n">vert</span><span class="p">(</span><span class="n">appdata_img</span> <span class="n">v</span><span class="p">)</span> <span class="p">{</span>
+				<span class="n">v2f</span> <span class="n">o</span><span class="p">;</span>
+				
+				<span class="n">o</span><span class="p">.</span><span class="n">pos</span> <span class="o">=</span> <span class="n">UnityObjectToClipPos</span><span class="p">(</span><span class="n">v</span><span class="p">.</span><span class="n">vertex</span><span class="p">);</span>
+				
+				<span class="n">o</span><span class="p">.</span><span class="n">uv</span> <span class="o">=</span> <span class="n">v</span><span class="p">.</span><span class="n">texcoord</span><span class="p">;</span>
+						 
+				<span class="k">return</span> <span class="n">o</span><span class="p">;</span>
+			<span class="p">}</span>
+		
+			<span class="n">fixed4</span> <span class="n">frag</span><span class="p">(</span><span class="n">v2f</span> <span class="n">i</span><span class="p">)</span> <span class="o">:</span> <span class="n">SV_Target</span> <span class="p">{</span>
+				<span class="n">fixed4</span> <span class="n">renderTex</span> <span class="o">=</span> <span class="n">tex2D</span><span class="p">(</span><span class="n">_MainTex</span><span class="p">,</span> <span class="n">i</span><span class="p">.</span><span class="n">uv</span><span class="p">);</span>  
+				  
+				<span class="c1">// Apply brightness</span>
+				<span class="n">fixed3</span> <span class="n">finalColor</span> <span class="o">=</span> <span class="n">renderTex</span><span class="p">.</span><span class="n">rgb</span> <span class="o">*</span> <span class="n">_Brightness</span><span class="p">;</span>
+				
+				<span class="c1">// Apply saturation</span>
+				<span class="c1">//计算亮度值 通过对每个颜色分量乘以一个特定的系数再相加得到当前像素亮度值</span>
+				<span class="n">fixed</span> <span class="n">luminance</span> <span class="o">=</span> <span class="mi">0</span><span class="p">.</span><span class="mi">2125</span> <span class="o">*</span> <span class="n">renderTex</span><span class="p">.</span><span class="n">r</span> <span class="o">+</span> <span class="mi">0</span><span class="p">.</span><span class="mi">7154</span> <span class="o">*</span> <span class="n">renderTex</span><span class="p">.</span><span class="n">g</span> <span class="o">+</span> <span class="mi">0</span><span class="p">.</span><span class="mo">0721</span> <span class="o">*</span> <span class="n">renderTex</span><span class="p">.</span><span class="n">b</span><span class="p">;</span>
+				<span class="c1">//饱和度为0的颜色值，使用_Saturation对上一步得到的颜色之间进行插值，从而得到希望的饱和度颜色</span>
+				<span class="n">fixed3</span> <span class="n">luminanceColor</span> <span class="o">=</span> <span class="n">fixed3</span><span class="p">(</span><span class="n">luminance</span><span class="p">,</span> <span class="n">luminance</span><span class="p">,</span> <span class="n">luminance</span><span class="p">);</span>
+				<span class="n">finalColor</span> <span class="o">=</span> <span class="n">lerp</span><span class="p">(</span><span class="n">luminanceColor</span><span class="p">,</span> <span class="n">finalColor</span><span class="p">,</span> <span class="n">_Saturation</span><span class="p">);</span>
+				
+				<span class="c1">// Apply contrast</span>
+				<span class="n">fixed3</span> <span class="n">avgColor</span> <span class="o">=</span> <span class="n">fixed3</span><span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">5</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">5</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">5</span><span class="p">);</span>
+				<span class="c1">//对比度</span>
+				<span class="n">finalColor</span> <span class="o">=</span> <span class="n">lerp</span><span class="p">(</span><span class="n">avgColor</span><span class="p">,</span> <span class="n">finalColor</span><span class="p">,</span> <span class="n">_Contrast</span><span class="p">);</span>
+				
+				<span class="k">return</span> <span class="n">fixed4</span><span class="p">(</span><span class="n">finalColor</span><span class="p">,</span> <span class="n">renderTex</span><span class="p">.</span><span class="n">a</span><span class="p">);</span>  
+			<span class="p">}</span>  
+			  
+			<span class="n">ENDCG</span>
+		<span class="p">}</span>  
+	<span class="p">}</span>
+	
+	<span class="n">Fallback</span> <span class="n">Off</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+<video src="http://xiaoblog.tech/assets/img/sample/posteffect12_2.mp4" controls="controls" width="100%" height="auto" />
+
+:ET

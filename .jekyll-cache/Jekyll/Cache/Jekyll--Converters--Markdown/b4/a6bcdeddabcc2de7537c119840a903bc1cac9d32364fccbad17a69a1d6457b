@@ -1,0 +1,453 @@
+I"n<p>1.在线性表中，数据元素之间是被串起来的，仅有线性关系，每个数据元素只有开一个直接前驱和一个直接后继
+2.在树形结构中，数据元素之间有明显的层次关系，并且在每一层上的数据元素可能和下一层多个元素相关，但只能和上一层一个元素相关。
+这两种结构只能表达一对多的关系，当遇到多对多关系，就需要图。</p>
+
+<p>图是由有穷非空集合和顶点之间变得集合组成，通常表示为：G（v,e）,G表示一个图，V是图G中顶点的集合，E
+是图G中边的集合。</p>
+
+<p>1.线性表中数据元素 叫元素 。 树-结点 图-顶点
+2.图是有穷非空集合，图结构中不允许没有顶点
+3.线性表中，相邻数据元素之间具有线性关系</p>
+
+<p>无向边 顶点之间的边没有方向，如果任意两个顶点之间的边都是无向边，则称该图为无向图。
+若两顶点之间的边有方向，则称这条边为有向边，也称为弧。
+无向图中，如果任意两个顶点之间都存在边，则称该图为无向完全图。含有n个顶点的无向完全图
+在有向图中，如果任意两个顶点之间都存在方向互为相反的两条弧，则称该图为有向完全图</p>
+
+<table>
+  <tbody>
+    <tr>
+      <td>![图]({{ “/assets/img/sample/wuxiangtu.png”</td>
+      <td>relative_url }})</td>
+    </tr>
+    <tr>
+      <td>![图]({{ “/assets/img/sample/wuxiangtu1.png”</td>
+      <td>relative_url }})</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>图的遍历
+深度优先 （Depth First Search）
+广度优先 (Braddth FS)</p>
+
+<p>深度优先和广度优先，时间复杂度相同，不同之处仅仅在于对顶点访问的顺序不同。</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193
+194
+195
+196
+197
+198
+199
+200
+201
+202
+203
+204
+205
+206
+207
+208
+</pre></td><td class="rouge-code"><pre><span class="kn">package</span> <span class="nn">com.learn.graph</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">java.util.ArrayList</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.util.Arrays</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.util.LinkedList</span><span class="o">;</span>
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">Graph</span> <span class="o">{</span>
+
+    <span class="kd">private</span> <span class="nc">ArrayList</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">&gt;</span> <span class="n">vertexList</span><span class="o">;</span> <span class="c1">//存储顶点集合</span>
+    <span class="kd">private</span> <span class="kt">int</span><span class="o">[][]</span> <span class="n">edges</span><span class="o">;</span> <span class="c1">//存储图对应的邻结矩阵</span>
+    <span class="kd">private</span> <span class="kt">int</span> <span class="n">numOfEdges</span><span class="o">;</span> <span class="c1">//表示边的数目</span>
+    <span class="c1">//定义给数组boolean[], 记录某个结点是否被访问</span>
+    <span class="kd">private</span> <span class="kt">boolean</span><span class="o">[]</span> <span class="n">isVisited</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="nc">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
+        <span class="c1">//测试一把图是否创建ok</span>
+        <span class="kt">int</span> <span class="n">n</span> <span class="o">=</span> <span class="mi">8</span><span class="o">;</span>  <span class="c1">//结点的个数</span>
+        <span class="c1">//String Vertexs[] = {"A", "B", "C", "D", "E"};</span>
+        <span class="nc">String</span> <span class="nc">Vertexs</span><span class="o">[]</span> <span class="o">=</span> <span class="o">{</span><span class="s">"1"</span><span class="o">,</span> <span class="s">"2"</span><span class="o">,</span> <span class="s">"3"</span><span class="o">,</span> <span class="s">"4"</span><span class="o">,</span> <span class="s">"5"</span><span class="o">,</span> <span class="s">"6"</span><span class="o">,</span> <span class="s">"7"</span><span class="o">,</span> <span class="s">"8"</span><span class="o">};</span>
+
+        <span class="c1">//创建图对象</span>
+        <span class="nc">Graph</span> <span class="n">graph</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Graph</span><span class="o">(</span><span class="n">n</span><span class="o">);</span>
+        <span class="c1">//循环的添加顶点</span>
+        <span class="k">for</span><span class="o">(</span><span class="nc">String</span> <span class="nl">vertex:</span> <span class="nc">Vertexs</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">graph</span><span class="o">.</span><span class="na">insertVertex</span><span class="o">(</span><span class="n">vertex</span><span class="o">);</span>
+        <span class="o">}</span>
+
+        <span class="c1">//添加边</span>
+        <span class="c1">//A-B A-C B-C B-D B-E</span>
+<span class="c1">//		graph.insertEdge(0, 1, 1); // A-B</span>
+<span class="c1">//		graph.insertEdge(0, 2, 1); //</span>
+<span class="c1">//		graph.insertEdge(1, 2, 1); //</span>
+<span class="c1">//		graph.insertEdge(1, 3, 1); //</span>
+<span class="c1">//		graph.insertEdge(1, 4, 1); //</span>
+
+        <span class="c1">//更新边的关系</span>
+        <span class="n">graph</span><span class="o">.</span><span class="na">insertEdge</span><span class="o">(</span><span class="mi">0</span><span class="o">,</span> <span class="mi">1</span><span class="o">,</span> <span class="mi">1</span><span class="o">);</span>
+        <span class="n">graph</span><span class="o">.</span><span class="na">insertEdge</span><span class="o">(</span><span class="mi">0</span><span class="o">,</span> <span class="mi">2</span><span class="o">,</span> <span class="mi">1</span><span class="o">);</span>
+        <span class="n">graph</span><span class="o">.</span><span class="na">insertEdge</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="mi">3</span><span class="o">,</span> <span class="mi">1</span><span class="o">);</span>
+        <span class="n">graph</span><span class="o">.</span><span class="na">insertEdge</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="mi">4</span><span class="o">,</span> <span class="mi">1</span><span class="o">);</span>
+        <span class="n">graph</span><span class="o">.</span><span class="na">insertEdge</span><span class="o">(</span><span class="mi">3</span><span class="o">,</span> <span class="mi">7</span><span class="o">,</span> <span class="mi">1</span><span class="o">);</span>
+        <span class="n">graph</span><span class="o">.</span><span class="na">insertEdge</span><span class="o">(</span><span class="mi">4</span><span class="o">,</span> <span class="mi">7</span><span class="o">,</span> <span class="mi">1</span><span class="o">);</span>
+        <span class="n">graph</span><span class="o">.</span><span class="na">insertEdge</span><span class="o">(</span><span class="mi">2</span><span class="o">,</span> <span class="mi">5</span><span class="o">,</span> <span class="mi">1</span><span class="o">);</span>
+        <span class="n">graph</span><span class="o">.</span><span class="na">insertEdge</span><span class="o">(</span><span class="mi">2</span><span class="o">,</span> <span class="mi">6</span><span class="o">,</span> <span class="mi">1</span><span class="o">);</span>
+        <span class="n">graph</span><span class="o">.</span><span class="na">insertEdge</span><span class="o">(</span><span class="mi">5</span><span class="o">,</span> <span class="mi">6</span><span class="o">,</span> <span class="mi">1</span><span class="o">);</span>
+
+
+
+        <span class="c1">//显示一把邻结矩阵</span>
+        <span class="n">graph</span><span class="o">.</span><span class="na">showGraph</span><span class="o">();</span>
+
+        <span class="c1">//测试一把，我们的dfs遍历是否ok</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"深度遍历"</span><span class="o">);</span>
+        <span class="n">graph</span><span class="o">.</span><span class="na">dfs</span><span class="o">();</span> <span class="c1">// A-&gt;B-&gt;C-&gt;D-&gt;E [1-&gt;2-&gt;4-&gt;8-&gt;5-&gt;3-&gt;6-&gt;7]</span>
+<span class="c1">//		System.out.println();</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"广度优先!"</span><span class="o">);</span>
+        <span class="n">graph</span><span class="o">.</span><span class="na">bfs</span><span class="o">();</span> <span class="c1">// A-&gt;B-&gt;C-&gt;D-E [1-&gt;2-&gt;3-&gt;4-&gt;5-&gt;6-&gt;7-&gt;8]</span>
+
+    <span class="o">}</span>
+
+    <span class="c1">//构造器</span>
+    <span class="kd">public</span> <span class="nf">Graph</span><span class="o">(</span><span class="kt">int</span> <span class="n">n</span><span class="o">)</span> <span class="o">{</span>
+        <span class="c1">//初始化矩阵和vertexList</span>
+        <span class="n">edges</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">int</span><span class="o">[</span><span class="n">n</span><span class="o">][</span><span class="n">n</span><span class="o">];</span>
+        <span class="n">vertexList</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">ArrayList</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">&gt;(</span><span class="n">n</span><span class="o">);</span>
+        <span class="n">numOfEdges</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+
+    <span class="o">}</span>
+
+    <span class="c1">//得到第一个邻接结点的下标 w</span>
+    <span class="cm">/**
+     *
+     * @param index
+     * @return 如果存在就返回对应的下标，否则返回-1
+     */</span>
+    <span class="kd">public</span> <span class="kt">int</span> <span class="nf">getFirstNeighbor</span><span class="o">(</span><span class="kt">int</span> <span class="n">index</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">vertexList</span><span class="o">.</span><span class="na">size</span><span class="o">();</span> <span class="n">j</span><span class="o">++)</span> <span class="o">{</span>
+            <span class="k">if</span><span class="o">(</span><span class="n">edges</span><span class="o">[</span><span class="n">index</span><span class="o">][</span><span class="n">j</span><span class="o">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+                <span class="k">return</span> <span class="n">j</span><span class="o">;</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="o">;</span>
+    <span class="o">}</span>
+    <span class="c1">//根据前一个邻接结点的下标来获取下一个邻接结点</span>
+    <span class="kd">public</span> <span class="kt">int</span> <span class="nf">getNextNeighbor</span><span class="o">(</span><span class="kt">int</span> <span class="n">v1</span><span class="o">,</span> <span class="kt">int</span> <span class="n">v2</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">j</span> <span class="o">=</span> <span class="n">v2</span> <span class="o">+</span> <span class="mi">1</span><span class="o">;</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">vertexList</span><span class="o">.</span><span class="na">size</span><span class="o">();</span> <span class="n">j</span><span class="o">++)</span> <span class="o">{</span>
+            <span class="k">if</span><span class="o">(</span><span class="n">edges</span><span class="o">[</span><span class="n">v1</span><span class="o">][</span><span class="n">j</span><span class="o">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+                <span class="k">return</span> <span class="n">j</span><span class="o">;</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="c1">//深度优先遍历算法</span>
+    <span class="c1">//i 第一次就是 0</span>
+    <span class="kd">private</span> <span class="kt">void</span> <span class="nf">dfs</span><span class="o">(</span><span class="kt">boolean</span><span class="o">[]</span> <span class="n">isVisited</span><span class="o">,</span> <span class="kt">int</span> <span class="n">i</span><span class="o">)</span> <span class="o">{</span>
+        <span class="c1">//首先我们访问该结点,输出</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">print</span><span class="o">(</span><span class="n">getValueByIndex</span><span class="o">(</span><span class="n">i</span><span class="o">)</span> <span class="o">+</span> <span class="s">"-&gt;"</span><span class="o">);</span>
+        <span class="c1">//将结点设置为已经访问</span>
+        <span class="n">isVisited</span><span class="o">[</span><span class="n">i</span><span class="o">]</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+        <span class="c1">//查找结点i的第一个邻接结点w</span>
+        <span class="kt">int</span> <span class="n">w</span> <span class="o">=</span> <span class="n">getFirstNeighbor</span><span class="o">(</span><span class="n">i</span><span class="o">);</span>
+        <span class="k">while</span><span class="o">(</span><span class="n">w</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="o">)</span> <span class="o">{</span><span class="c1">//说明有</span>
+            <span class="k">if</span><span class="o">(!</span><span class="n">isVisited</span><span class="o">[</span><span class="n">w</span><span class="o">])</span> <span class="o">{</span>
+                <span class="n">dfs</span><span class="o">(</span><span class="n">isVisited</span><span class="o">,</span> <span class="n">w</span><span class="o">);</span>
+            <span class="o">}</span>
+            <span class="c1">//如果w结点已经被访问过</span>
+            <span class="n">w</span> <span class="o">=</span> <span class="n">getNextNeighbor</span><span class="o">(</span><span class="n">i</span><span class="o">,</span> <span class="n">w</span><span class="o">);</span>
+        <span class="o">}</span>
+
+    <span class="o">}</span>
+
+    <span class="c1">//对dfs 进行一个重载, 遍历我们所有的结点，并进行 dfs</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">dfs</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">isVisited</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">boolean</span><span class="o">[</span><span class="n">vertexList</span><span class="o">.</span><span class="na">size</span><span class="o">()];</span>
+        <span class="c1">//遍历所有的结点，进行dfs[回溯]</span>
+        <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">getNumOfVertex</span><span class="o">();</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+            <span class="k">if</span><span class="o">(!</span><span class="n">isVisited</span><span class="o">[</span><span class="n">i</span><span class="o">])</span> <span class="o">{</span>
+                <span class="n">dfs</span><span class="o">(</span><span class="n">isVisited</span><span class="o">,</span> <span class="n">i</span><span class="o">);</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="c1">//对一个结点进行广度优先遍历的方法</span>
+    <span class="kd">private</span> <span class="kt">void</span> <span class="nf">bfs</span><span class="o">(</span><span class="kt">boolean</span><span class="o">[]</span> <span class="n">isVisited</span><span class="o">,</span> <span class="kt">int</span> <span class="n">i</span><span class="o">)</span> <span class="o">{</span>
+        <span class="kt">int</span> <span class="n">u</span> <span class="o">;</span> <span class="c1">// 表示队列的头结点对应下标</span>
+        <span class="kt">int</span> <span class="n">w</span> <span class="o">;</span> <span class="c1">// 邻接结点w</span>
+        <span class="c1">//队列，记录结点访问的顺序</span>
+        <span class="nc">LinkedList</span> <span class="n">queue</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">LinkedList</span><span class="o">();</span>
+        <span class="c1">//访问结点，输出结点信息</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">print</span><span class="o">(</span><span class="n">getValueByIndex</span><span class="o">(</span><span class="n">i</span><span class="o">)</span> <span class="o">+</span> <span class="s">"=&gt;"</span><span class="o">);</span>
+        <span class="c1">//标记为已访问</span>
+        <span class="n">isVisited</span><span class="o">[</span><span class="n">i</span><span class="o">]</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+        <span class="c1">//将结点加入队列</span>
+        <span class="n">queue</span><span class="o">.</span><span class="na">addLast</span><span class="o">(</span><span class="n">i</span><span class="o">);</span>
+
+        <span class="k">while</span><span class="o">(</span> <span class="o">!</span><span class="n">queue</span><span class="o">.</span><span class="na">isEmpty</span><span class="o">())</span> <span class="o">{</span>
+            <span class="c1">//取出队列的头结点下标</span>
+            <span class="n">u</span> <span class="o">=</span> <span class="o">(</span><span class="nc">Integer</span><span class="o">)</span><span class="n">queue</span><span class="o">.</span><span class="na">removeFirst</span><span class="o">();</span>
+            <span class="c1">//得到第一个邻接结点的下标 w</span>
+            <span class="n">w</span> <span class="o">=</span> <span class="n">getFirstNeighbor</span><span class="o">(</span><span class="n">u</span><span class="o">);</span>
+            <span class="k">while</span><span class="o">(</span><span class="n">w</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="o">)</span> <span class="o">{</span><span class="c1">//找到</span>
+                <span class="c1">//是否访问过</span>
+                <span class="k">if</span><span class="o">(!</span><span class="n">isVisited</span><span class="o">[</span><span class="n">w</span><span class="o">])</span> <span class="o">{</span>
+                    <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">print</span><span class="o">(</span><span class="n">getValueByIndex</span><span class="o">(</span><span class="n">w</span><span class="o">)</span> <span class="o">+</span> <span class="s">"=&gt;"</span><span class="o">);</span>
+                    <span class="c1">//标记已经访问</span>
+                    <span class="n">isVisited</span><span class="o">[</span><span class="n">w</span><span class="o">]</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+                    <span class="c1">//入队</span>
+                    <span class="n">queue</span><span class="o">.</span><span class="na">addLast</span><span class="o">(</span><span class="n">w</span><span class="o">);</span>
+                <span class="o">}</span>
+                <span class="c1">//以u为前驱点，找w后面的下一个邻结点</span>
+                <span class="n">w</span> <span class="o">=</span> <span class="n">getNextNeighbor</span><span class="o">(</span><span class="n">u</span><span class="o">,</span> <span class="n">w</span><span class="o">);</span> <span class="c1">//体现出我们的广度优先</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+
+    <span class="o">}</span>
+
+    <span class="c1">//遍历所有的结点，都进行广度优先搜索</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">bfs</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">isVisited</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">boolean</span><span class="o">[</span><span class="n">vertexList</span><span class="o">.</span><span class="na">size</span><span class="o">()];</span>
+        <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">getNumOfVertex</span><span class="o">();</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+            <span class="k">if</span><span class="o">(!</span><span class="n">isVisited</span><span class="o">[</span><span class="n">i</span><span class="o">])</span> <span class="o">{</span>
+                <span class="n">bfs</span><span class="o">(</span><span class="n">isVisited</span><span class="o">,</span> <span class="n">i</span><span class="o">);</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="c1">//图中常用的方法</span>
+    <span class="c1">//返回结点的个数</span>
+    <span class="kd">public</span> <span class="kt">int</span> <span class="nf">getNumOfVertex</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">vertexList</span><span class="o">.</span><span class="na">size</span><span class="o">();</span>
+    <span class="o">}</span>
+    <span class="c1">//显示图对应的矩阵</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">showGraph</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">for</span><span class="o">(</span><span class="kt">int</span><span class="o">[]</span> <span class="n">link</span> <span class="o">:</span> <span class="n">edges</span><span class="o">)</span> <span class="o">{</span>
+            <span class="nc">System</span><span class="o">.</span><span class="na">err</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="nc">Arrays</span><span class="o">.</span><span class="na">toString</span><span class="o">(</span><span class="n">link</span><span class="o">));</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+    <span class="c1">//得到边的数目</span>
+    <span class="kd">public</span> <span class="kt">int</span> <span class="nf">getNumOfEdges</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">numOfEdges</span><span class="o">;</span>
+    <span class="o">}</span>
+    <span class="c1">//返回结点i(下标)对应的数据 0-&gt;"A" 1-&gt;"B" 2-&gt;"C"</span>
+    <span class="kd">public</span> <span class="nc">String</span> <span class="nf">getValueByIndex</span><span class="o">(</span><span class="kt">int</span> <span class="n">i</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">vertexList</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">i</span><span class="o">);</span>
+    <span class="o">}</span>
+    <span class="c1">//返回v1和v2的权值</span>
+    <span class="kd">public</span> <span class="kt">int</span> <span class="nf">getWeight</span><span class="o">(</span><span class="kt">int</span> <span class="n">v1</span><span class="o">,</span> <span class="kt">int</span> <span class="n">v2</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">edges</span><span class="o">[</span><span class="n">v1</span><span class="o">][</span><span class="n">v2</span><span class="o">];</span>
+    <span class="o">}</span>
+    <span class="c1">//插入结点</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">insertVertex</span><span class="o">(</span><span class="nc">String</span> <span class="n">vertex</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">vertexList</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">vertex</span><span class="o">);</span>
+    <span class="o">}</span>
+    <span class="c1">//添加边</span>
+    <span class="cm">/**
+     *
+     * @param v1 表示点的下标即使第几个顶点  "A"-"B" "A"-&gt;0 "B"-&gt;1
+     * @param v2 第二个顶点对应的下标
+     * @param weight 表示
+     */</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">insertEdge</span><span class="o">(</span><span class="kt">int</span> <span class="n">v1</span><span class="o">,</span> <span class="kt">int</span> <span class="n">v2</span><span class="o">,</span> <span class="kt">int</span> <span class="n">weight</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">edges</span><span class="o">[</span><span class="n">v1</span><span class="o">][</span><span class="n">v2</span><span class="o">]</span> <span class="o">=</span> <span class="n">weight</span><span class="o">;</span>
+        <span class="n">edges</span><span class="o">[</span><span class="n">v2</span><span class="o">][</span><span class="n">v1</span><span class="o">]</span> <span class="o">=</span> <span class="n">weight</span><span class="o">;</span>
+        <span class="n">numOfEdges</span><span class="o">++;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+</pre></td></tr></tbody></table></code></pre></div></div>
+:ET
