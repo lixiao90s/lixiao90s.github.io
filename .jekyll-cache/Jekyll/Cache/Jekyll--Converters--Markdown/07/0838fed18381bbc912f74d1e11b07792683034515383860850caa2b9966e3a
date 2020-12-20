@@ -1,4 +1,4 @@
-I"p&<div id="archives" class="pl-xl-2">
+I"Z(<div id="archives" class="pl-xl-2">
 
   
   
@@ -7,6 +7,20 @@
     
   <span class="lead">2020</span>
   <ul class="list-unstyled">
+  
+    <li>
+      <div>
+        
+        
+        <span class="date day">17</span>
+        <span class="date month small text-muted">Oct</span>
+        <a href="/posts/akka1/">Akka 入门-Actor</a>
+      </div>
+    </li>
+  
+
+  
+  
   
     <li>
       <div>
@@ -211,6 +225,20 @@
         <span class="date day">28</span>
         <span class="date month small text-muted">May</span>
         <a href="/posts/design-pattern1/">设计模式 - 命令模式</a>
+      </div>
+    </li>
+  
+
+  
+  
+  
+    <li>
+      <div>
+        
+        
+        <span class="date day">28</span>
+        <span class="date month small text-muted">May</span>
+        <a href="/posts/designpattern2/">设计模式 - 设计模式的原则</a>
       </div>
     </li>
   

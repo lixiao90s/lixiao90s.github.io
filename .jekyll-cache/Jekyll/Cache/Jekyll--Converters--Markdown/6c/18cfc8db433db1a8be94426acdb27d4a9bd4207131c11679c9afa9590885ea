@@ -1,4 +1,4 @@
-I"
+I"y
 <div id="tags" class="d-flex flex-wrap ml-xl-2 mr-xl-2">
 
 
@@ -7,11 +7,15 @@
 
 
   <div>
-    <a class="tag" href="/tags/behavior-pattern/">Behavior Pattern<span class="text-muted">1</span></a>
+    <a class="tag" href="/tags/akka/">Akka<span class="text-muted">1</span></a>
   </div>
 
   <div>
-    <a class="tag" href="/tags/command-pattern/">Command Pattern<span class="text-muted">1</span></a>
+    <a class="tag" href="/tags/behavior-pattern/">Behavior Pattern<span class="text-muted">2</span></a>
+  </div>
+
+  <div>
+    <a class="tag" href="/tags/command-pattern/">Command Pattern<span class="text-muted">2</span></a>
   </div>
 
   <div>

@@ -1,0 +1,267 @@
+I"�;<h2 id="命令模式">命令模式</h2>
+
+<h2 id="uml图">UML图</h2>
+<p>![描边]({{ “/assets/img/sample/command_pattern1.png” | relative_url }})</p>
+
+<h2 id="作用">作用</h2>
+<ul>
+  <li>较容易的实现命令队列</li>
+  <li>需要的时候可以方便记入日志</li>
+  <li>接收请求的地方决定是否要接收日志</li>
+  <li>实现请求的撤销和重做</li>
+  <li>方便增加新的具体命令类</li>
+</ul>
+
+<h2 id="缺点">缺点</h2>
+<ul>
+  <li>大量实例化命令</li>
+</ul>
+
+<h2 id="实现">实现</h2>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+</pre></td><td class="rouge-code"><pre><span class="c1">/// &lt;summary&gt;</span>
+<span class="c1">/// 声明执行操作的接口</span>
+<span class="c1">/// &lt;/summary&gt;</span>
+<span class="k">abstract</span> <span class="k">public</span> <span class="k">class</span> <span class="nc">Command</span> 
+<span class="p">{</span>
+    <span class="c1">//命令接收者</span>
+    <span class="k">protected</span> <span class="n">CubeReciever</span> <span class="n">reciever</span><span class="p">;</span>
+   <span class="k">abstract</span> <span class="k">public</span> <span class="kt">bool</span> <span class="nf">Excute</span><span class="p">();</span>
+   <span class="k">abstract</span> <span class="k">public</span> <span class="kt">bool</span> <span class="nf">Undo</span><span class="p">();</span>
+<span class="p">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+</pre></td><td class="rouge-code"><pre><span class="c1">//子类 ConcreteCommand</span>
+<span class="k">using</span> <span class="nn">UnityEngine</span><span class="p">;</span>
+<span class="k">public</span> <span class="k">class</span> <span class="nc">MoveCommand</span><span class="p">:</span><span class="n">Command</span>
+<span class="p">{</span>
+    <span class="n">Vector2</span> <span class="n">dir</span><span class="p">;</span>
+    <span class="k">public</span> <span class="nf">MoveCommand</span><span class="p">(</span> <span class="n">CubeReciever</span> <span class="n">reciever</span><span class="p">,</span><span class="n">Vector2</span> <span class="n">dir</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">base</span><span class="p">.</span><span class="n">reciever</span><span class="p">=</span><span class="n">reciever</span><span class="p">;</span>
+        <span class="k">this</span><span class="p">.</span><span class="n">dir</span><span class="p">=</span><span class="n">dir</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">public</span> <span class="k">override</span> <span class="kt">bool</span> <span class="nf">Excute</span><span class="p">(){</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">reciever</span><span class="p">==</span><span class="k">null</span> <span class="p">||</span> <span class="n">dir</span> <span class="p">==</span><span class="k">null</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="k">return</span> <span class="k">false</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="n">reciever</span><span class="p">.</span><span class="nf">CubeAction</span><span class="p">(</span><span class="n">dir</span><span class="p">);</span>
+        <span class="k">return</span> <span class="k">true</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">public</span> <span class="k">override</span> <span class="kt">bool</span> <span class="nf">Undo</span><span class="p">(){</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">reciever</span><span class="p">==</span><span class="k">null</span> <span class="p">||</span> <span class="n">dir</span><span class="p">==</span><span class="k">null</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="k">return</span> <span class="k">false</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="n">reciever</span><span class="p">.</span><span class="nf">CubeAction</span><span class="p">(-</span><span class="n">dir</span><span class="p">);</span>
+        <span class="k">return</span> <span class="k">true</span><span class="p">;</span>
+    <span class="p">}</span>
+
+
+<span class="p">}</span>
+
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+</pre></td><td class="rouge-code"><pre><span class="k">using</span> <span class="nn">UnityEngine</span><span class="p">;</span>
+<span class="k">public</span> <span class="k">class</span> <span class="nc">CubeReciever</span> 
+<span class="p">{</span>
+    <span class="k">public</span> <span class="n">GameObject</span> <span class="n">go</span><span class="p">;</span>
+    <span class="k">public</span>  <span class="nf">CubeReciever</span><span class="p">(</span><span class="n">GameObject</span> <span class="n">go</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="n">go</span><span class="p">=</span> <span class="n">go</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">public</span> <span class="k">void</span> <span class="nf">CubeAction</span><span class="p">(</span><span class="n">Vector2</span> <span class="n">dir</span><span class="p">){</span>
+        <span class="n">go</span><span class="p">.</span><span class="n">transform</span><span class="p">.</span><span class="n">localPosition</span><span class="p">+=</span><span class="k">new</span> <span class="nf">Vector3</span><span class="p">(</span><span class="n">dir</span><span class="p">.</span><span class="n">x</span><span class="p">,</span><span class="n">dir</span><span class="p">.</span><span class="n">y</span><span class="p">,</span><span class="m">0</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+</pre></td><td class="rouge-code"><pre><span class="k">using</span> <span class="nn">System.Collections</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">System.Collections.Generic</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">UnityEngine</span><span class="p">;</span>
+
+<span class="k">public</span> <span class="k">class</span> <span class="nc">PlayInvoker</span> <span class="p">:</span> <span class="n">MonoBehaviour</span> <span class="p">{</span>
+    <span class="kt">int</span> <span class="n">command_pos</span> <span class="p">=</span> <span class="p">-</span><span class="m">1</span><span class="p">;</span>
+    <span class="c1">//命令队列</span>
+    <span class="k">public</span> <span class="n">List</span><span class="p">&lt;</span><span class="n">MoveCommand</span><span class="p">&gt;</span> <span class="n">commands</span> <span class="p">=</span> <span class="k">new</span> <span class="n">List</span><span class="p">&lt;</span><span class="n">MoveCommand</span><span class="p">&gt;</span> <span class="p">();</span>
+    <span class="k">public</span> <span class="n">GameObject</span> <span class="n">btn_up</span><span class="p">;</span>
+    <span class="k">public</span> <span class="n">GameObject</span> <span class="n">btn_down</span><span class="p">;</span>
+    <span class="k">public</span> <span class="n">GameObject</span> <span class="n">btn_undo</span><span class="p">;</span>
+    <span class="k">public</span> <span class="n">GameObject</span> <span class="n">btn_redo</span><span class="p">;</span>
+    <span class="k">private</span> <span class="n">CubeReciever</span> <span class="n">reciever</span><span class="p">;</span>
+    <span class="k">public</span> <span class="n">GameObject</span> <span class="n">reciever_go</span><span class="p">;</span>
+    <span class="k">void</span> <span class="nf">Awake</span> <span class="p">()</span> <span class="p">{</span>
+        <span class="n">reciever</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">CubeReciever</span> <span class="p">(</span><span class="n">reciever_go</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="k">public</span> <span class="k">void</span> <span class="nf">Click</span> <span class="p">(</span><span class="n">GameObject</span> <span class="n">go</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">go</span><span class="p">.</span><span class="nf">Equals</span> <span class="p">(</span><span class="n">btn_up</span><span class="p">))</span> <span class="p">{</span>
+            <span class="n">Vector2</span> <span class="n">up</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">Vector2</span> <span class="p">(</span><span class="m">0</span><span class="p">,</span> <span class="m">1</span><span class="p">);</span>
+            <span class="nf">Move</span> <span class="p">(</span><span class="n">up</span><span class="p">);</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">go</span><span class="p">.</span><span class="nf">Equals</span> <span class="p">(</span><span class="n">btn_down</span><span class="p">))</span> <span class="p">{</span>
+            <span class="n">Vector2</span> <span class="n">down</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">Vector2</span> <span class="p">(</span><span class="m">0</span><span class="p">,</span> <span class="p">-</span><span class="m">1</span><span class="p">);</span>
+            <span class="nf">Move</span> <span class="p">(</span><span class="n">down</span><span class="p">);</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">go</span><span class="p">.</span><span class="nf">Equals</span> <span class="p">(</span><span class="n">btn_undo</span><span class="p">))</span> <span class="p">{</span>
+            <span class="nf">Undo</span> <span class="p">();</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">go</span><span class="p">.</span><span class="nf">Equals</span> <span class="p">(</span><span class="n">btn_redo</span><span class="p">))</span> <span class="p">{</span>
+            <span class="nf">Redo</span> <span class="p">();</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">public</span> <span class="k">void</span> <span class="nf">Move</span> <span class="p">(</span><span class="n">Vector2</span> <span class="n">dir</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">MoveCommand</span> <span class="n">command</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">MoveCommand</span> <span class="p">(</span><span class="n">reciever</span><span class="p">,</span> <span class="n">dir</span><span class="p">);</span>
+        <span class="kt">bool</span> <span class="n">suc</span> <span class="p">=</span> <span class="n">command</span><span class="p">.</span><span class="nf">Excute</span> <span class="p">();</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">suc</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">commands</span><span class="p">.</span><span class="nf">Add</span> <span class="p">(</span><span class="n">command</span><span class="p">);</span>
+            <span class="n">command_pos</span> <span class="p">=</span> <span class="n">commands</span><span class="p">.</span><span class="n">Count</span><span class="p">;</span>
+        <span class="p">}</span>
+
+    <span class="p">}</span>
+    <span class="c1">//实现请求的撤销和重做</span>
+    <span class="k">public</span> <span class="k">void</span> <span class="nf">Undo</span> <span class="p">()</span> <span class="p">{</span>
+        <span class="kt">int</span> <span class="n">tar_pos</span> <span class="p">=</span> <span class="n">command_pos</span> <span class="p">-</span> <span class="m">1</span><span class="p">;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">tar_pos</span> <span class="p">&gt;=</span> <span class="m">0</span> <span class="p">&amp;&amp;</span> <span class="n">tar_pos</span> <span class="p">&lt;</span> <span class="n">commands</span><span class="p">.</span><span class="n">Count</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">MoveCommand</span> <span class="n">command</span> <span class="p">=</span> <span class="n">commands</span><span class="p">[</span><span class="n">tar_pos</span><span class="p">];</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">command</span><span class="p">.</span><span class="nf">Undo</span> <span class="p">())</span> <span class="p">{</span>
+                <span class="n">command_pos</span> <span class="p">--;</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="c1">//实现请求的撤销和重做</span>
+    <span class="k">public</span> <span class="k">void</span> <span class="nf">Redo</span> <span class="p">()</span> <span class="p">{</span>
+
+        <span class="k">if</span><span class="p">(</span><span class="n">command_pos</span><span class="p">&lt;</span><span class="n">commands</span><span class="p">.</span><span class="n">Count</span><span class="p">){</span>
+            <span class="n">MoveCommand</span> <span class="n">command</span> <span class="p">=</span> <span class="n">commands</span><span class="p">[</span><span class="n">command_pos</span><span class="p">];</span>
+            <span class="k">if</span><span class="p">(</span><span class="n">command</span><span class="p">.</span><span class="nf">Excute</span> <span class="p">())</span>
+            <span class="p">{</span>
+                <span class="n">command_pos</span><span class="p">++;</span>
+            <span class="p">}</span> 
+        <span class="p">}</span>
+      
+
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+:ET

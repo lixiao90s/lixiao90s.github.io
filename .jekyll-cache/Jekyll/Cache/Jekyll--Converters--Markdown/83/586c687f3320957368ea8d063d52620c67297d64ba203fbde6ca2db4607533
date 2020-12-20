@@ -1,4 +1,54 @@
-I"f>
+I".D
+<div class="card categories">
+    <!-- top-category -->
+    <div class="card-header d-flex justify-content-between hide-border-bottom" id="h_Akka">
+      <span>
+      
+        <i class="far fa-folder-open fa-fw"></i>
+      
+        <a href="/categories/akka/" class="ml-1 mr-2">Akka</a>
+        <!-- content count -->
+        
+        <span class="text-muted small font-weight-light">
+        
+          1
+          category,
+        
+          1
+          post
+        </span>
+      </span>
+
+      <!-- arrow -->
+      <a href="#l_Akka" data-toggle="collapse" aria-expanded="true" class="category-trigger hide-border-bottom">
+        
+        <i class="fas fa-fw fa-angle-down"></i>
+        
+      </a>
+
+    </div> <!-- .card-header -->
+
+    <!-- Sub-categories -->
+    
+    <div id="l_Akka" class="collapse show" aria-expanded="true">
+      <ul class="list-group">
+        
+        <li class="list-group-item">
+          <i class="far fa-folder fa-fw"></i>
+          <a href="/categories//" class="ml-1 mr-2"></a>
+          
+          <span class="text-muted small font-weight-light">0
+            post
+          </span>
+        </li>
+        
+      </ul>
+    </div>
+    
+
+  </div>
+<p><!-- .card --></p>
+
 <div class="card categories">
     <!-- top-category -->
     <div class="card-header d-flex justify-content-between hide-border-bottom" id="h_Algorithm">
@@ -11,10 +61,10 @@
         
         <span class="text-muted small font-weight-light">
         
-          3
+          2
           categories,
         
-          3
+          2
           posts
         </span>
       </span>
@@ -32,15 +82,6 @@
     
     <div id="l_Algorithm" class="collapse show" aria-expanded="true">
       <ul class="list-group">
-        
-        <li class="list-group-item">
-          <i class="far fa-folder fa-fw"></i>
-          <a href="/categories//" class="ml-1 mr-2"></a>
-          
-          <span class="text-muted small font-weight-light">0
-            post
-          </span>
-        </li>
         
         <li class="list-group-item">
           <i class="far fa-folder fa-fw"></i>
@@ -219,11 +260,11 @@
         
         <span class="text-muted small font-weight-light">
         
-          1
-          category,
+          3
+          categories,
         
-          1
-          post
+          3
+          posts
         </span>
       </span>
 
@@ -240,6 +281,24 @@
     
     <div id="l_Design Pattern" class="collapse show" aria-expanded="true">
       <ul class="list-group">
+        
+        <li class="list-group-item">
+          <i class="far fa-folder fa-fw"></i>
+          <a href="/categories//" class="ml-1 mr-2"></a>
+          
+          <span class="text-muted small font-weight-light">0
+            post
+          </span>
+        </li>
+        
+        <li class="list-group-item">
+          <i class="far fa-folder fa-fw"></i>
+          <a href="/categories//" class="ml-1 mr-2"></a>
+          
+          <span class="text-muted small font-weight-light">0
+            post
+          </span>
+        </li>
         
         <li class="list-group-item">
           <i class="far fa-folder fa-fw"></i>
