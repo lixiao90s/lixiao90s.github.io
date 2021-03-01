@@ -1,0 +1,52 @@
+I"�<h2 id="原型模式prototype">原型模式（ProtoType）</h2>
+
+<ul>
+  <li>用原型实例指定创建对象的种类，并且通过拷贝这些原型，创建新的对象</li>
+  <li>原型模式是一种创建型模式，允许一个对象再创建另外一个可定制的对象，无需知道任何创建的细节</li>
+  <li>工作原理是通过将一个原型对象传给那个要发动创建的对象，这个要发动创建的对象通过请求原型对象拷贝它们自己来实施创建，即对象.clone</li>
+</ul>
+
+<p><img src="/assets/%E2%81%A8%E2%81%A8designpattern/protoType.png" alt="图" /></p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+</pre></td><td class="rouge-code"><pre>
+<span class="kn">package</span> <span class="nn">CreationalPattern.ProtoTypePattern</span><span class="o">;</span>
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">Main</span> <span class="o">{</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="nc">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="nc">ProtoType</span> <span class="n">pt1</span> <span class="o">=</span><span class="k">new</span> <span class="nc">ProtoType</span><span class="o">(</span><span class="mi">1</span><span class="o">);</span>
+        <span class="nc">ProtoType</span> <span class="n">pt2</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">ProtoType</span><span class="o">(</span><span class="mi">2</span><span class="o">);</span>
+        <span class="n">pt1</span><span class="o">.</span><span class="na">setProtoType</span><span class="o">(</span><span class="n">pt2</span><span class="o">);</span>
+
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">pt1</span><span class="o">.</span><span class="na">toString</span><span class="o">());</span>
+        <span class="k">try</span> <span class="o">{</span>
+            <span class="nc">ProtoType</span> <span class="n">pt3</span> <span class="o">=</span> <span class="o">(</span><span class="nc">ProtoType</span><span class="o">)</span> <span class="n">pt1</span><span class="o">.</span><span class="na">clone</span><span class="o">();</span>
+            <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">pt3</span><span class="o">.</span><span class="na">toString</span><span class="o">());</span>
+        <span class="o">}</span><span class="k">catch</span> <span class="o">(</span><span class="nc">Exception</span> <span class="n">e</span><span class="o">)</span>
+        <span class="o">{</span>
+            <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">e</span><span class="o">.</span><span class="na">getMessage</span><span class="o">());</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+:ET
