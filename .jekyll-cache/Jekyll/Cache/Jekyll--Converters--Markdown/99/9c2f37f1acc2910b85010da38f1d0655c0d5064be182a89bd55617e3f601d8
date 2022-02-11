@@ -1,0 +1,112 @@
+I"}<h2 id="内存结构">内存结构</h2>
+<ul>
+  <li>栈 存放局部变量</li>
+  <li>
+    <p>堆 存放对象，数组</p>
+  </li>
+  <li>变量 成员变量 vs 局部变量（方法内，方法形参，构造器，构造器形参，代码块内）</li>
+</ul>
+
+<h2 id="四种访问权限修饰符">四种访问权限修饰符</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: left">修饰符</th>
+      <th style="text-align: left">类内部</th>
+      <th style="text-align: left">同一个包</th>
+      <th style="text-align: left">不同包的子类</th>
+      <th style="text-align: left">同一个工程</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: left">private</td>
+      <td style="text-align: left">yes</td>
+      <td style="text-align: left"> </td>
+      <td style="text-align: left"> </td>
+      <td style="text-align: left"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">default</td>
+      <td style="text-align: left">yes</td>
+      <td style="text-align: left">yes</td>
+      <td style="text-align: left"> </td>
+      <td style="text-align: left"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">protected</td>
+      <td style="text-align: left">yes</td>
+      <td style="text-align: left">yes</td>
+      <td style="text-align: left">yes</td>
+      <td style="text-align: left"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">public</td>
+      <td style="text-align: left">yes</td>
+      <td style="text-align: left">yes</td>
+      <td style="text-align: left">yes</td>
+      <td style="text-align: left">yes</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>对于class的修饰符只有public 和default</p>
+
+<h1 id="javabean-符合以下标准的类">JavaBean 符合以下标准的类</h1>
+<ul>
+  <li>类是公共的</li>
+  <li>有一个无参的公共构造器</li>
+  <li>有属性，且有对应的get,set方法</li>
+</ul>
+
+<p>用户可以使用JavaBean 将功能，处理，值，数据库访问和其他任何可以用java代码创造的对象进行打包，并且其他的开发者可以通过内部的JSP页面，Servlet,其他JavaBean,applet程序或者应用来使用这些对象。用户可以认为JavaBean 提供了一种随时随地的复制和赞贴的功能，而不用关心任何改变。</p>
+
+<h1 id="this">this</h1>
+<ul>
+  <li>this可以调用属性，方法，构造器</li>
+  <li>this() 调用构造器，可以显示的使用this(形参列表)方式，调用指定的其他构造器，不能形成递归</li>
+</ul>
+
+<h1 id="继承">继承</h1>
+<ul>
+  <li>子类继承后，具有父类的所有属性和方法 ，private属性和方法仍然认为获取到了，但是因为封装的原因，不能直接调用</li>
+  <li>所有的java类处 java.lang.Object 外，都直接或者间接继承了java.lang.Object类</li>
+  <li>当子类和父类中定义同名属性时，我们想要在子类调用父类中的属性方式，必须使用“super.属性”，子类不会覆盖父类的属性</li>
+  <li>我们可以在子类构造器中显示的使用super(形参列表)，调用父类的构造器，必须声明在子类构造器的首行</li>
+  <li>在构造器的首行没有显示的声明this(形参列表)或super(形参列表)，则默认调用的是父类的空参的构造函数</li>
+</ul>
+
+<h2 id="子类对象的实例化过程">子类对象的实例化过程</h2>
+
+<ul>
+  <li>从结果来看 子类继承父类以后，就获取了父类所有的属性和方法</li>
+  <li>创建子类的对象后，在堆空间中，就会加载所有父类中声明的属性</li>
+  <li>从过程看 当我们通过子类的构造器创建子类对象时，我们一定会直接或者间接的调用父类的构造器，直到调用了java.lang.Object类中空参的构造器为止。正因为加载过所有父类的结构，所有内存中才会有所有父类的结构，并且使用。</li>
+  <li>虽然创建子类对象时，调用了父类的构造器，但是只创建了一个对象，就是new 出来的对象</li>
+</ul>
+
+<h1 id="多态性">多态性</h1>
+
+<ul>
+  <li>对象的多态性，父类的引用指向子类的对象</li>
+</ul>
+
+<h2 id="多态的使用">多态的使用</h2>
+<ul>
+  <li>当调用子父类同名同参方法时，执行的是子类重写父类的方法</li>
+  <li>编译期，只能调用父类中声明的方法 ，但是运行期，我们实际执行的是子类重写的方法 只适用方法，编译看左边，运行看右边</li>
+  <li>对象的多态性，只使用于方法，不适用于属性。 编译和运行都看左边。</li>
+  <li>虚拟方法调用 子类中定义了与父类同名同参数的方法，在多态情况下，将此时父类的方法称为虚拟方法，父类根据赋给它不同子类对象，动态调用属于子类的的该方法，这样的方法调用在编译器是无法确定的。</li>
+  <li>编译时类型和运行时类型。方法调用是在运行时确定的，动态绑定。</li>
+  <li>多态是个运行时行为</li>
+</ul>
+
+<p>## 方法的重写</p>
+<ul>
+  <li>方法名，形参列表相同</li>
+  <li>权限修饰符不能小于父类</li>
+  <li>返回值不能大于父类的返回类型</li>
+  <li>static 方法不涉及到重写</li>
+</ul>
+:ET
