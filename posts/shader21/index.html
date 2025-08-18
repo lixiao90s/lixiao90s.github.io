@@ -1,0 +1,635 @@
+<!doctype html><html lang="zh-CN" ><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><meta name="theme-color" media="(prefers-color-scheme: light)" content="#f7f7f7"><meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1b1b1e"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="viewport" content="width=device-width, user-scalable=no initial-scale=1, shrink-to-fit=no, viewport-fit=cover" ><meta name="generator" content="Jekyll v4.4.1" /><meta property="og:title" content="shader入门基础-动画" /><meta name="author" content="晓" /><meta property="og:locale" content="zh_CN" /><meta name="description" content="Unity 内置时间变量" /><meta property="og:description" content="Unity 内置时间变量" /><link rel="canonical" href="https://lixiao90s.github.io/posts/shader21/" /><meta property="og:url" content="https://lixiao90s.github.io/posts/shader21/" /><meta property="og:site_name" content="晓的博客" /><meta property="og:type" content="article" /><meta property="article:published_time" content="2020-05-12T10:36:00+08:00" /><meta name="twitter:card" content="summary" /><meta property="twitter:title" content="shader入门基础-动画" /><meta name="twitter:site" content="@twitter_username" /><meta name="twitter:creator" content="@晓" /> <script type="application/ld+json"> {"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"晓"},"dateModified":"2020-05-12T10:36:00+08:00","datePublished":"2020-05-12T10:36:00+08:00","description":"Unity 内置时间变量","headline":"shader入门基础-动画","mainEntityOfPage":{"@type":"WebPage","@id":"https://lixiao90s.github.io/posts/shader21/"},"url":"https://lixiao90s.github.io/posts/shader21/"}</script><title>shader入门基础-动画 | 晓的博客</title><link rel="apple-touch-icon" sizes="180x180" href="/assets/img/favicons/apple-touch-icon.png"><link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicons/favicon-32x32.png"><link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicons/favicon-16x16.png"><link rel="manifest" href="/assets/img/favicons/site.webmanifest"><link rel="shortcut icon" href="/assets/img/favicons/favicon.ico"><meta name="apple-mobile-web-app-title" content="晓的博客"><meta name="application-name" content="晓的博客"><meta name="msapplication-TileColor" content="#da532c"><meta name="msapplication-config" content="/assets/img/favicons/browserconfig.xml"><meta name="theme-color" content="#ffffff"><link rel="preconnect" href="https://fonts.googleapis.com" ><link rel="dns-prefetch" href="https://fonts.googleapis.com" ><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="dns-prefetch" href="https://fonts.gstatic.com" ><link rel="preconnect" href="https://cdn.jsdelivr.net" ><link rel="dns-prefetch" href="https://cdn.jsdelivr.net" ><link rel="stylesheet" href="/assets/css/jekyll-theme-chirpy.css"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400&family=Source+Sans+Pro:wght@400;600;700;900&display=swap"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tocbot@4.32.2/dist/tocbot.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/loading-attribute-polyfill@2.1.1/dist/loading-attribute-polyfill.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox@3.3.0/dist/css/glightbox.min.css"> <script src="/assets/js/dist/theme.min.js"></script> <script defer src="https://cdn.jsdelivr.net/combine/npm/simple-jekyll-search@1.10.0/dest/simple-jekyll-search.min.js,npm/loading-attribute-polyfill@2.1.1/dist/loading-attribute-polyfill.umd.min.js,npm/glightbox@3.3.0/dist/js/glightbox.min.js,npm/clipboard@2.0.11/dist/clipboard.min.js,npm/dayjs@1.11.13/dayjs.min.js,npm/dayjs@1.11.13/locale/zh.js,npm/dayjs@1.11.13/plugin/relativeTime.js,npm/dayjs@1.11.13/plugin/localizedFormat.js,npm/tocbot@4.32.2/dist/tocbot.min.js"></script> <script defer src="/assets/js/dist/post.min.js"></script> <script defer src="/app.min.js?baseurl=&register=" ></script><body><aside aria-label="Sidebar" id="sidebar" class="d-flex flex-column align-items-end"><header class="profile-wrapper"> <a href="/" id="avatar" class="rounded-circle"><img src="/assets/img/sample/favicon.ico" width="112" height="112" alt="avatar" onerror="this.style.display='none'"></a> <a class="site-title d-block" href="/">晓的博客</a><p class="site-subtitle fst-italic mb-0">学习&工作记录</p></header><nav class="flex-column flex-grow-1 w-100 ps-0"><ul class="nav"><li class="nav-item"> <a href="/" class="nav-link"> <i class="fa-fw fas fa-home"></i> <span>首页</span> </a><li class="nav-item"> <a href="/categories/" class="nav-link"> <i class="fa-fw fas fa-stream"></i> <span>分类</span> </a><li class="nav-item"> <a href="/tags/" class="nav-link"> <i class="fa-fw fas fa-tags"></i> <span>标签</span> </a><li class="nav-item"> <a href="/archives/" class="nav-link"> <i class="fa-fw fas fa-archive"></i> <span>归档</span> </a><li class="nav-item"> <a href="/about/" class="nav-link"> <i class="fa-fw fas fa-info-circle"></i> <span>关于</span> </a></ul></nav><div class="sidebar-bottom d-flex flex-wrap align-items-center w-100"> <button type="button" class="btn btn-link nav-link" aria-label="Switch Mode" id="mode-toggle"> <i class="fas fa-adjust"></i> </button> <span class="icon-border"></span> <a href="https://github.com/lixiao90s" aria-label="github" target="_blank" rel="noopener noreferrer" > <i class="fab fa-github"></i> </a> <a href="https://twitter.com/twitter_username" aria-label="twitter" target="_blank" rel="noopener noreferrer" > <i class="fa-brands fa-x-twitter"></i> </a> <a href="javascript:location.href = 'mailto:' + ['example','domain.com'].join('@')" aria-label="email" > <i class="fas fa-envelope"></i> </a> <a href="/feed.xml" aria-label="rss" > <i class="fas fa-rss"></i> </a></div></aside><div id="main-wrapper" class="d-flex justify-content-center"><div class="container d-flex flex-column px-xxl-5"><header id="topbar-wrapper" class="flex-shrink-0" aria-label="Top Bar"><div id="topbar" class="d-flex align-items-center justify-content-between px-lg-3 h-100" ><nav id="breadcrumb" aria-label="Breadcrumb"> <span> <a href="/">首页</a> </span> <span>shader入门基础-动画</span></nav><button type="button" id="sidebar-trigger" class="btn btn-link" aria-label="Sidebar"> <i class="fas fa-bars fa-fw"></i> </button><div id="topbar-title"> 文章</div><button type="button" id="search-trigger" class="btn btn-link" aria-label="Search"> <i class="fas fa-search fa-fw"></i> </button> <search id="search" class="align-items-center ms-3 ms-lg-0"> <i class="fas fa-search fa-fw"></i> <input class="form-control" id="search-input" type="search" aria-label="search" autocomplete="off" placeholder="搜索..." > </search> <button type="button" class="btn btn-link text-decoration-none" id="search-cancel">取消</button></div></header><div class="row flex-grow-1"><main aria-label="Main Content" class="col-12 col-lg-11 col-xl-9 px-md-4"><article class="px-1" data-toc="true"><header><h1 data-toc-skip>shader入门基础-动画</h1><div class="post-meta text-muted"> <span> 发表于 <time data-ts="1589250960" data-df="YYYY/MM/DD" data-bs-toggle="tooltip" data-bs-placement="bottom" > 2020/05/12 </time> </span><div class="d-flex justify-content-between"> <span> 作者 <em> </em> </span><div> <span class="readtime" data-bs-toggle="tooltip" data-bs-placement="bottom" title="1487 字" > <em>8 分钟</em>阅读</span></div></div></div></header><div id="toc-bar" class="d-flex align-items-center justify-content-between invisible"> <span class="label text-truncate">shader入门基础-动画</span> <button type="button" class="toc-trigger btn me-1"> <i class="fa-solid fa-list-ul fa-fw"></i> </button></div><button id="toc-solo-trigger" type="button" class="toc-trigger btn btn-outline-secondary btn-sm"> <span class="label ps-2 pe-1">文章内容</span> <i class="fa-solid fa-angle-right fa-fw"></i> </button> <dialog id="toc-popup" class="p-0"><div class="header d-flex flex-row align-items-center justify-content-between"><div class="label text-truncate py-2 ms-4">shader入门基础-动画</div><button id="toc-popup-close" type="button" class="btn mx-1 my-1 opacity-75"> <i class="fas fa-close"></i> </button></div><div id="toc-popup-content" class="px-4 py-3 pb-4"></div></dialog><div class="content"><h2 id="unity-内置时间变量"><span class="me-2">Unity 内置时间变量</span><a href="#unity-内置时间变量" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h2><div class="table-wrapper"><table><thead><tr><th>名称<th>类型<th>描述<tbody><tr><td>_Time<td>float4<td>t 是自然该场景加载开始所经过的时间，(t/20,t,2t,3t)<tr><td>_SinTime<td>float4<td>t 是时间的正弦值，(t/8,t/4,t/2,t)<tr><td>_CosTime<td>float4<td>t 是时间的余弦值，(t/8,t/4,t/2,t)<tr><td>unity_DeltaTime<td>float4<td>dt 是时间增量，(dt,1/dt,smoothDt,1/smoothDt)</table></div><h2 id="纹理动画"><span class="me-2">纹理动画</span><a href="#纹理动画" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h2><p><a href="/assets/img/sample/sequence.gif" class="popup img-link shimmer"><img src="/assets/img/sample/sequence.gif" alt="序列动画" loading="lazy"></a></p><div class="language-c highlighter-rouge"><div class="code-header"> <span data-label-text="C"><i class="fas fa-code fa-fw small"></i></span> <button aria-label="copy" data-title-succeed="已复制！"><i class="far fa-clipboard"></i></button></div><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+</pre><td class="rouge-code"><pre><span class="n">Shader</span> <span class="s">"Practice/SequenceAnim"</span>
+<span class="p">{</span>
+    <span class="n">Properties</span>
+    <span class="p">{</span>
+        <span class="n">_MainTex</span> <span class="p">(</span><span class="s">"Texture"</span><span class="p">,</span> <span class="mi">2</span><span class="n">D</span><span class="p">)</span> <span class="o">=</span> <span class="s">"white"</span> <span class="p">{}</span>
+        <span class="n">_RowCount</span><span class="p">(</span><span class="s">"行数"</span><span class="p">,</span><span class="kt">int</span><span class="p">)</span><span class="o">=</span><span class="mi">4</span>
+        <span class="n">_ColCount</span><span class="p">(</span><span class="s">"列数"</span><span class="p">,</span><span class="kt">int</span><span class="p">)</span><span class="o">=</span><span class="mi">4</span>
+        <span class="n">_Speed</span><span class="p">(</span><span class="s">"播放速度"</span><span class="p">,</span><span class="n">Range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">100</span><span class="p">))</span><span class="o">=</span><span class="mi">1</span><span class="p">.</span><span class="mi">0</span>
+    <span class="p">}</span>
+    <span class="n">SubShader</span>
+    <span class="p">{</span>
+        <span class="c1">// No culling or depth</span>
+        <span class="n">Tags</span> <span class="p">{</span><span class="s">"Queue"</span><span class="o">=</span><span class="s">"Transparent"</span> <span class="s">"IgnoreProjector"</span><span class="o">=</span><span class="s">"true"</span> <span class="s">"RenderType"</span><span class="o">=</span><span class="s">"Transparent"</span><span class="p">}</span>
+
+        <span class="n">Pass</span>
+        <span class="p">{</span>
+            <span class="n">Tags</span> <span class="p">{</span><span class="s">"LightModel"</span><span class="o">=</span><span class="s">"ForwardBase"</span><span class="p">}</span>
+            <span class="n">Blend</span> <span class="n">SrcAlpha</span> <span class="n">OneMinusSrcAlpha</span>
+            <span class="n">CGPROGRAM</span>
+            <span class="cp">#pragma vertex vert
+</span>            <span class="cp">#pragma fragment frag
+</span>
+            <span class="cp">#include</span> <span class="cpf">"UnityCG.cginc"</span><span class="cp">
+</span>            <span class="n">sampler2D</span> <span class="n">_MainTex</span><span class="p">;</span>
+            <span class="n">float4</span> <span class="n">_MainTex_ST</span><span class="p">;</span>
+            <span class="kt">float</span> <span class="n">_Speed</span><span class="p">;</span>
+            <span class="n">half</span> <span class="n">_RowCount</span><span class="p">;</span>
+            <span class="n">half</span> <span class="n">_ColCount</span><span class="p">;</span>
+            <span class="k">struct</span> <span class="n">appdata</span>
+            <span class="p">{</span>
+                <span class="n">float4</span> <span class="n">vertex</span> <span class="o">:</span> <span class="n">POSITION</span><span class="p">;</span>
+                <span class="n">float2</span> <span class="n">uv</span> <span class="o">:</span> <span class="n">TEXCOORD0</span><span class="p">;</span>
+            <span class="p">};</span>
+
+            <span class="k">struct</span> <span class="n">v2f</span>
+            <span class="p">{</span>
+                <span class="n">float2</span> <span class="n">uv</span> <span class="o">:</span> <span class="n">TEXCOORD0</span><span class="p">;</span>
+                <span class="n">float4</span> <span class="n">vertex</span> <span class="o">:</span> <span class="n">SV_POSITION</span><span class="p">;</span>
+            <span class="p">};</span>
+
+            <span class="n">v2f</span> <span class="n">vert</span> <span class="p">(</span><span class="n">appdata</span> <span class="n">v</span><span class="p">)</span>
+            <span class="p">{</span>
+                <span class="n">v2f</span> <span class="n">o</span><span class="p">;</span>
+                <span class="n">o</span><span class="p">.</span><span class="n">vertex</span> <span class="o">=</span> <span class="n">UnityObjectToClipPos</span><span class="p">(</span><span class="n">v</span><span class="p">.</span><span class="n">vertex</span><span class="p">);</span>
+                <span class="n">o</span><span class="p">.</span><span class="n">uv</span> <span class="o">=</span> <span class="n">TRANSFORM_TEX</span><span class="p">(</span><span class="n">v</span><span class="p">.</span><span class="n">uv</span><span class="p">,</span><span class="n">_MainTex</span><span class="p">)</span> <span class="p">;</span>
+                <span class="k">return</span> <span class="n">o</span><span class="p">;</span>
+            <span class="p">}</span>
+
+            <span class="n">fixed4</span> <span class="n">frag</span> <span class="p">(</span><span class="n">v2f</span> <span class="n">i</span><span class="p">)</span> <span class="o">:</span> <span class="n">SV_Target</span>
+            <span class="p">{</span>
+                <span class="kt">float</span> <span class="n">length</span> <span class="o">=</span> <span class="n">_Speed</span><span class="o">*</span><span class="n">_Time</span><span class="p">.</span><span class="n">y</span><span class="p">;</span>
+                <span class="n">half</span> <span class="n">curRow</span> <span class="o">=</span> <span class="n">floor</span><span class="p">(</span><span class="n">length</span><span class="o">/</span><span class="n">_ColCount</span><span class="p">);</span>
+                <span class="n">half</span> <span class="n">curCol</span> <span class="o">=</span> <span class="n">floor</span><span class="p">(</span><span class="n">length</span><span class="o">-</span><span class="n">curRow</span><span class="o">*</span><span class="n">_ColCount</span><span class="p">);</span>
+                <span class="n">half2</span> <span class="n">uv</span> <span class="o">=</span><span class="n">float2</span><span class="p">(</span><span class="n">i</span><span class="p">.</span><span class="n">uv</span><span class="p">.</span><span class="n">x</span><span class="o">/</span><span class="n">_ColCount</span><span class="p">,</span><span class="n">i</span><span class="p">.</span><span class="n">uv</span><span class="p">.</span><span class="n">y</span><span class="o">/</span><span class="n">_RowCount</span><span class="p">);</span>
+                <span class="n">uv</span><span class="p">.</span><span class="n">x</span><span class="o">+=</span> <span class="n">curCol</span><span class="o">/</span><span class="n">_ColCount</span><span class="p">;</span>
+                <span class="n">uv</span><span class="p">.</span><span class="n">y</span><span class="o">-=</span> <span class="n">curRow</span><span class="o">/</span><span class="n">_RowCount</span><span class="p">;</span>
+                <span class="n">fixed4</span> <span class="n">col</span> <span class="o">=</span><span class="n">tex2D</span><span class="p">(</span><span class="n">_MainTex</span><span class="p">,</span><span class="n">uv</span><span class="p">);</span>
+                <span class="k">return</span>  <span class="n">col</span><span class="p">;</span>
+            <span class="p">}</span>
+            <span class="n">ENDCG</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+</pre></table></code></div></div><h2 id="滚动的背景"><span class="me-2">滚动的背景</span><a href="#滚动的背景" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h2><p><a href="/assets/img/sample/bganim.gif" class="popup img-link shimmer"><img src="/assets/img/sample/bganim.gif" alt="滚动的背景" loading="lazy"></a></p><div class="language-c highlighter-rouge"><div class="code-header"> <span data-label-text="C"><i class="fas fa-code fa-fw small"></i></span> <button aria-label="copy" data-title-succeed="已复制！"><i class="far fa-clipboard"></i></button></div><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+</pre><td class="rouge-code"><pre><span class="n">Shader</span> <span class="s">"Practice/BgAnim"</span>
+<span class="p">{</span>
+    <span class="n">Properties</span>
+    <span class="p">{</span>
+        <span class="n">_FirstBG</span> <span class="p">(</span><span class="s">"FirstBG"</span><span class="p">,</span> <span class="mi">2</span><span class="n">D</span><span class="p">)</span> <span class="o">=</span> <span class="s">"white"</span> <span class="p">{}</span>
+        <span class="n">_SecondBG</span> <span class="p">(</span><span class="s">"FirstBG"</span><span class="p">,</span> <span class="mi">2</span><span class="n">D</span><span class="p">)</span> <span class="o">=</span> <span class="s">"white"</span> <span class="p">{}</span>
+        <span class="n">_ScrollX</span><span class="p">(</span><span class="s">"_ScrollX"</span><span class="p">,</span><span class="kt">float</span><span class="p">)</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">_ScrollX2</span><span class="p">(</span><span class="s">"_ScrollX2"</span><span class="p">,</span><span class="kt">float</span><span class="p">)</span><span class="o">=</span><span class="mi">1</span><span class="p">.</span><span class="mi">1</span>
+    <span class="p">}</span>
+    <span class="n">SubShader</span>
+    <span class="p">{</span>
+        <span class="c1">// No culling or depth</span>
+        <span class="n">Cull</span> <span class="n">Off</span> <span class="n">ZWrite</span> <span class="n">Off</span> <span class="n">ZTest</span> <span class="n">Always</span>
+
+        <span class="n">Pass</span>
+        <span class="p">{</span>
+            <span class="n">CGPROGRAM</span>
+            <span class="cp">#pragma vertex vert
+</span>            <span class="cp">#pragma fragment frag
+</span>
+            <span class="cp">#include</span> <span class="cpf">"UnityCG.cginc"</span><span class="cp">
+</span>            <span class="n">sampler2D</span> <span class="n">_FirstBG</span><span class="p">;</span>
+            <span class="n">sampler2D</span> <span class="n">_SecondBG</span><span class="p">;</span>
+            <span class="n">fixed4</span> <span class="n">_FirstBG_ST</span><span class="p">;</span>
+            <span class="n">fixed4</span> <span class="n">_SecondBG_ST</span><span class="p">;</span>
+            <span class="kt">float</span> <span class="n">_ScrollX2</span><span class="p">;</span>
+            <span class="kt">float</span> <span class="n">_ScrollX</span><span class="p">;</span>
+            <span class="k">struct</span> <span class="n">appdata</span>
+            <span class="p">{</span>
+                <span class="n">float4</span> <span class="n">vertex</span> <span class="o">:</span> <span class="n">POSITION</span><span class="p">;</span>
+                <span class="n">float2</span> <span class="n">uv</span> <span class="o">:</span> <span class="n">TEXCOORD0</span><span class="p">;</span>
+            <span class="p">};</span>
+
+            <span class="k">struct</span> <span class="n">v2f</span>
+            <span class="p">{</span>
+                <span class="n">float4</span> <span class="n">uv</span> <span class="o">:</span> <span class="n">TEXCOORD0</span><span class="p">;</span>
+                <span class="n">float4</span> <span class="n">vertex</span> <span class="o">:</span> <span class="n">SV_POSITION</span><span class="p">;</span>
+            <span class="p">};</span>
+
+            <span class="n">v2f</span> <span class="n">vert</span> <span class="p">(</span><span class="n">appdata</span> <span class="n">v</span><span class="p">)</span>
+            <span class="p">{</span>
+                <span class="n">v2f</span> <span class="n">o</span><span class="p">;</span>
+                <span class="n">o</span><span class="p">.</span><span class="n">vertex</span> <span class="o">=</span> <span class="n">UnityObjectToClipPos</span><span class="p">(</span><span class="n">v</span><span class="p">.</span><span class="n">vertex</span><span class="p">);</span>
+                <span class="n">o</span><span class="p">.</span><span class="n">uv</span><span class="p">.</span><span class="n">xy</span> <span class="o">=</span><span class="n">TRANSFORM_TEX</span><span class="p">(</span><span class="n">v</span><span class="p">.</span><span class="n">uv</span><span class="p">,</span><span class="n">_FirstBG</span><span class="p">);</span>
+                <span class="n">o</span><span class="p">.</span><span class="n">uv</span><span class="p">.</span><span class="n">zw</span> <span class="o">=</span> <span class="n">TRANSFORM_TEX</span><span class="p">(</span><span class="n">v</span><span class="p">.</span><span class="n">uv</span><span class="p">,</span><span class="n">_SecondBG</span><span class="p">);</span>
+                <span class="k">return</span> <span class="n">o</span><span class="p">;</span>
+            <span class="p">}</span>
+
+
+            <span class="n">fixed4</span> <span class="n">frag</span> <span class="p">(</span><span class="n">v2f</span> <span class="n">i</span><span class="p">)</span> <span class="o">:</span> <span class="n">SV_Target</span>
+            <span class="p">{</span>
+                <span class="n">float2</span> <span class="n">uv_offset</span> <span class="o">=</span> <span class="n">frac</span><span class="p">(</span><span class="n">float2</span><span class="p">(</span><span class="n">_ScrollX</span><span class="p">,</span><span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">)</span><span class="o">*</span><span class="n">_Time</span><span class="p">.</span><span class="n">y</span><span class="p">);</span>
+                <span class="n">float2</span> <span class="n">uv_offset2</span> <span class="o">=</span> <span class="n">frac</span><span class="p">(</span><span class="n">float2</span><span class="p">(</span><span class="n">_ScrollX2</span><span class="p">,</span><span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">)</span><span class="o">*</span><span class="n">_Time</span><span class="p">.</span><span class="n">y</span><span class="p">);</span>
+                <span class="n">fixed4</span> <span class="n">col</span> <span class="o">=</span> <span class="n">tex2D</span><span class="p">(</span><span class="n">_FirstBG</span><span class="p">,</span> <span class="n">i</span><span class="p">.</span><span class="n">uv</span><span class="p">.</span><span class="n">xy</span><span class="o">+</span><span class="n">uv_offset</span><span class="p">);</span>
+                <span class="n">fixed4</span> <span class="n">col2</span> <span class="o">=</span><span class="n">tex2D</span><span class="p">(</span><span class="n">_SecondBG</span><span class="p">,</span><span class="n">i</span><span class="p">.</span><span class="n">uv</span><span class="p">.</span><span class="n">zw</span><span class="o">+</span><span class="n">uv_offset2</span><span class="p">);</span>
+                <span class="n">fixed4</span> <span class="n">final_col</span><span class="o">=</span><span class="n">lerp</span><span class="p">(</span><span class="n">col</span><span class="p">,</span><span class="n">col2</span><span class="p">,</span><span class="n">col2</span><span class="p">.</span><span class="n">a</span><span class="p">);</span>
+                <span class="k">return</span> <span class="n">final_col</span><span class="p">;</span>
+            <span class="p">}</span>
+            <span class="n">ENDCG</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+</pre></table></code></div></div><h2 id="顶点动画"><span class="me-2">顶点动画</span><a href="#顶点动画" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h2><p><strong>DisableBatching:</strong> 批处理会合并所有相关的模型，而这些模型各自的模型空间会丢失。我们需要在物体的模型空间下对顶点位置进行偏移，因此需要取消 批处理操作。</p><p><a href="/assets/img/sample/river.gif" class="popup img-link shimmer"><img src="/assets/img/sample/river.gif" alt="滚动的背景" loading="lazy"></a></p><div class="language-c highlighter-rouge"><div class="code-header"> <span data-label-text="C"><i class="fas fa-code fa-fw small"></i></span> <button aria-label="copy" data-title-succeed="已复制！"><i class="far fa-clipboard"></i></button></div><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+</pre><td class="rouge-code"><pre><span class="n">Properties</span> <span class="p">{</span>
+		<span class="n">_MainTex</span> <span class="p">(</span><span class="s">"Main Tex"</span><span class="p">,</span> <span class="mi">2</span><span class="n">D</span><span class="p">)</span> <span class="o">=</span> <span class="s">"white"</span> <span class="p">{}</span>
+		<span class="n">_Color</span> <span class="p">(</span><span class="s">"Color Tint"</span><span class="p">,</span> <span class="n">Color</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+		<span class="n">_Magnitude</span> <span class="p">(</span><span class="s">"Distortion Magnitude"</span><span class="p">,</span> <span class="n">Float</span><span class="p">)</span> <span class="o">=</span> <span class="mi">1</span>
+ 		<span class="n">_Frequency</span> <span class="p">(</span><span class="s">"Distortion Frequency"</span><span class="p">,</span> <span class="n">Float</span><span class="p">)</span> <span class="o">=</span> <span class="mi">1</span>
+ 		<span class="n">_InvWaveLength</span> <span class="p">(</span><span class="s">"Distortion Inverse Wave Length"</span><span class="p">,</span> <span class="n">Float</span><span class="p">)</span> <span class="o">=</span> <span class="mi">10</span>
+ 		<span class="n">_Speed</span> <span class="p">(</span><span class="s">"Speed"</span><span class="p">,</span> <span class="n">Float</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span><span class="p">.</span><span class="mi">5</span>
+	<span class="p">}</span>
+	<span class="n">SubShader</span> <span class="p">{</span>
+		<span class="c1">// Need to disable batching because of the vertex animation</span>
+		<span class="n">Tags</span> <span class="p">{</span><span class="s">"Queue"</span><span class="o">=</span><span class="s">"Transparent"</span> <span class="s">"IgnoreProjector"</span><span class="o">=</span><span class="s">"True"</span> <span class="s">"RenderType"</span><span class="o">=</span><span class="s">"Transparent"</span> <span class="s">"DisableBatching"</span><span class="o">=</span><span class="s">"True"</span><span class="p">}</span>
+
+		<span class="n">Pass</span> <span class="p">{</span>
+			<span class="n">Tags</span> <span class="p">{</span> <span class="s">"LightMode"</span><span class="o">=</span><span class="s">"ForwardBase"</span> <span class="p">}</span>
+
+			<span class="n">ZWrite</span> <span class="n">Off</span>
+			<span class="n">Blend</span> <span class="n">SrcAlpha</span> <span class="n">OneMinusSrcAlpha</span>
+			<span class="n">Cull</span> <span class="n">Off</span>
+
+			<span class="n">CGPROGRAM</span>
+			<span class="cp">#pragma vertex vert
+</span>			<span class="cp">#pragma fragment frag
+</span>
+			<span class="cp">#include</span> <span class="cpf">"UnityCG.cginc"</span><span class="cp">
+</span>
+			<span class="n">sampler2D</span> <span class="n">_MainTex</span><span class="p">;</span>
+			<span class="n">float4</span> <span class="n">_MainTex_ST</span><span class="p">;</span>
+			<span class="n">fixed4</span> <span class="n">_Color</span><span class="p">;</span>
+			<span class="kt">float</span> <span class="n">_Magnitude</span><span class="p">;</span>
+			<span class="kt">float</span> <span class="n">_Frequency</span><span class="p">;</span>
+			<span class="kt">float</span> <span class="n">_InvWaveLength</span><span class="p">;</span>
+			<span class="kt">float</span> <span class="n">_Speed</span><span class="p">;</span>
+
+			<span class="k">struct</span> <span class="n">a2v</span> <span class="p">{</span>
+				<span class="n">float4</span> <span class="n">vertex</span> <span class="o">:</span> <span class="n">POSITION</span><span class="p">;</span>
+				<span class="n">float4</span> <span class="n">texcoord</span> <span class="o">:</span> <span class="n">TEXCOORD0</span><span class="p">;</span>
+			<span class="p">};</span>
+
+			<span class="k">struct</span> <span class="n">v2f</span> <span class="p">{</span>
+				<span class="n">float4</span> <span class="n">pos</span> <span class="o">:</span> <span class="n">SV_POSITION</span><span class="p">;</span>
+				<span class="n">float2</span> <span class="n">uv</span> <span class="o">:</span> <span class="n">TEXCOORD0</span><span class="p">;</span>
+			<span class="p">};</span>
+
+			<span class="n">v2f</span> <span class="n">vert</span><span class="p">(</span><span class="n">a2v</span> <span class="n">v</span><span class="p">)</span> <span class="p">{</span>
+				<span class="n">v2f</span> <span class="n">o</span><span class="p">;</span>
+
+				<span class="n">float4</span> <span class="n">offset</span><span class="p">;</span>
+				<span class="n">offset</span><span class="p">.</span><span class="n">yzw</span> <span class="o">=</span> <span class="n">float3</span><span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span>
+				<span class="n">offset</span><span class="p">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">sin</span><span class="p">(</span><span class="n">_Frequency</span> <span class="o">*</span> <span class="n">_Time</span><span class="p">.</span><span class="n">y</span> <span class="o">+</span> <span class="n">v</span><span class="p">.</span><span class="n">vertex</span><span class="p">.</span><span class="n">x</span> <span class="o">*</span> <span class="n">_InvWaveLength</span> <span class="o">+</span> <span class="n">v</span><span class="p">.</span><span class="n">vertex</span><span class="p">.</span><span class="n">y</span> <span class="o">*</span> <span class="n">_InvWaveLength</span> <span class="o">+</span> <span class="n">v</span><span class="p">.</span><span class="n">vertex</span><span class="p">.</span><span class="n">z</span> <span class="o">*</span> <span class="n">_InvWaveLength</span><span class="p">)</span> <span class="o">*</span> <span class="n">_Magnitude</span><span class="p">;</span>
+				<span class="n">o</span><span class="p">.</span><span class="n">pos</span> <span class="o">=</span> <span class="n">UnityObjectToClipPos</span><span class="p">(</span><span class="n">v</span><span class="p">.</span><span class="n">vertex</span> <span class="o">+</span> <span class="n">offset</span><span class="p">);</span>
+
+				<span class="n">o</span><span class="p">.</span><span class="n">uv</span> <span class="o">=</span> <span class="n">TRANSFORM_TEX</span><span class="p">(</span><span class="n">v</span><span class="p">.</span><span class="n">texcoord</span><span class="p">,</span> <span class="n">_MainTex</span><span class="p">);</span>
+				<span class="n">o</span><span class="p">.</span><span class="n">uv</span> <span class="o">+=</span>  <span class="n">float2</span><span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="n">_Time</span><span class="p">.</span><span class="n">y</span> <span class="o">*</span> <span class="n">_Speed</span><span class="p">);</span>
+
+				<span class="k">return</span> <span class="n">o</span><span class="p">;</span>
+			<span class="p">}</span>
+
+			<span class="n">fixed4</span> <span class="n">frag</span><span class="p">(</span><span class="n">v2f</span> <span class="n">i</span><span class="p">)</span> <span class="o">:</span> <span class="n">SV_Target</span> <span class="p">{</span>
+				<span class="n">fixed4</span> <span class="n">c</span> <span class="o">=</span> <span class="n">tex2D</span><span class="p">(</span><span class="n">_MainTex</span><span class="p">,</span> <span class="n">i</span><span class="p">.</span><span class="n">uv</span><span class="p">);</span>
+				<span class="n">c</span><span class="p">.</span><span class="n">rgb</span> <span class="o">*=</span> <span class="n">_Color</span><span class="p">.</span><span class="n">rgb</span><span class="p">;</span>
+
+				<span class="k">return</span> <span class="n">c</span><span class="p">;</span>
+			<span class="p">}</span>
+
+			<span class="n">ENDCG</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+	<span class="n">FallBack</span> <span class="s">"Transparent/VertexLit"</span>
+</pre></table></code></div></div><h2 id="广告牌技术"><span class="me-2">广告牌技术</span><a href="#广告牌技术" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h2><p>根据视角方向来旋转一个被纹理着色的多边形，使得多边形看起来好像总是面对摄像机。广告牌技术的本质是构建旋转矩阵。 <a href="/assets/img/sample/billbord.gif" class="popup img-link shimmer"><img src="/assets/img/sample/billbord.gif" alt="广告牌" loading="lazy"></a></p><p>为了避免使用模型空间的中心作为锚点，我们可以利用顶点颜色存储每个顶点到锚点的距离值。</p><div class="language-c highlighter-rouge"><div class="code-header"> <span data-label-text="C"><i class="fas fa-code fa-fw small"></i></span> <button aria-label="copy" data-title-succeed="已复制！"><i class="far fa-clipboard"></i></button></div><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+</pre><td class="rouge-code"><pre><span class="n">Shader</span> <span class="s">"Practice/BillBoard"</span>
+<span class="p">{</span>
+   <span class="n">Properties</span> <span class="p">{</span>
+		<span class="n">_MainTex</span> <span class="p">(</span><span class="s">"Main Tex"</span><span class="p">,</span> <span class="mi">2</span><span class="n">D</span><span class="p">)</span> <span class="o">=</span> <span class="s">"white"</span> <span class="p">{}</span>
+		<span class="n">_Color</span> <span class="p">(</span><span class="s">"Color Tint"</span><span class="p">,</span> <span class="n">Color</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+		<span class="n">_VerticalBillboarding</span> <span class="p">(</span><span class="s">"Vertical Restraints"</span><span class="p">,</span> <span class="n">Range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span> <span class="o">=</span> <span class="mi">1</span>
+	<span class="p">}</span>
+	<span class="n">SubShader</span> <span class="p">{</span>
+		<span class="c1">// 关闭批处理，批处理会导致模型各自的模型空间丢失</span>
+		<span class="n">Tags</span> <span class="p">{</span><span class="s">"Queue"</span><span class="o">=</span><span class="s">"Transparent"</span> <span class="s">"IgnoreProjector"</span><span class="o">=</span><span class="s">"True"</span> <span class="s">"RenderType"</span><span class="o">=</span><span class="s">"Transparent"</span> <span class="s">"DisableBatching"</span><span class="o">=</span><span class="s">"True"</span><span class="p">}</span>
+
+		<span class="n">Pass</span> <span class="p">{</span>
+			<span class="n">Tags</span> <span class="p">{</span> <span class="s">"LightMode"</span><span class="o">=</span><span class="s">"ForwardBase"</span> <span class="p">}</span>
+
+			<span class="n">ZWrite</span> <span class="n">Off</span>
+			<span class="n">Blend</span> <span class="n">SrcAlpha</span> <span class="n">OneMinusSrcAlpha</span>
+            <span class="c1">//关闭剔除让广告牌每个面都能显示</span>
+			<span class="n">Cull</span> <span class="n">Off</span>
+
+			<span class="n">CGPROGRAM</span>
+
+			<span class="cp">#pragma vertex vert
+</span>			<span class="cp">#pragma fragment frag
+</span>
+			<span class="cp">#include</span> <span class="cpf">"Lighting.cginc"</span><span class="cp">
+</span>
+			<span class="n">sampler2D</span> <span class="n">_MainTex</span><span class="p">;</span>
+			<span class="n">float4</span> <span class="n">_MainTex_ST</span><span class="p">;</span>
+			<span class="n">fixed4</span> <span class="n">_Color</span><span class="p">;</span>
+			<span class="n">fixed</span> <span class="n">_VerticalBillboarding</span><span class="p">;</span>
+
+			<span class="k">struct</span> <span class="n">a2v</span> <span class="p">{</span>
+				<span class="n">float4</span> <span class="n">vertex</span> <span class="o">:</span> <span class="n">POSITION</span><span class="p">;</span>
+				<span class="n">float4</span> <span class="n">texcoord</span> <span class="o">:</span> <span class="n">TEXCOORD0</span><span class="p">;</span>
+			<span class="p">};</span>
+
+			<span class="k">struct</span> <span class="n">v2f</span> <span class="p">{</span>
+				<span class="n">float4</span> <span class="n">pos</span> <span class="o">:</span> <span class="n">SV_POSITION</span><span class="p">;</span>
+				<span class="n">float2</span> <span class="n">uv</span> <span class="o">:</span> <span class="n">TEXCOORD0</span><span class="p">;</span>
+			<span class="p">};</span>
+
+			<span class="n">v2f</span> <span class="n">vert</span> <span class="p">(</span><span class="n">a2v</span> <span class="n">v</span><span class="p">)</span> <span class="p">{</span>
+				<span class="n">v2f</span> <span class="n">o</span><span class="p">;</span>
+				<span class="c1">//模型空间位置原点</span>
+				<span class="n">float3</span> <span class="n">center</span> <span class="o">=</span> <span class="n">float3</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+                <span class="c1">//将摄像机位置转换到模型空间坐标</span>
+				<span class="n">float3</span> <span class="n">viewer</span> <span class="o">=</span> <span class="n">mul</span><span class="p">(</span><span class="n">unity_WorldToObject</span><span class="p">,</span><span class="n">float4</span><span class="p">(</span><span class="n">_WorldSpaceCameraPos</span><span class="p">,</span> <span class="mi">1</span><span class="p">));</span>
+				<span class="c1">// 摄像机指向原点的方向作为法线方向</span>
+				<span class="n">float3</span> <span class="n">normalDir</span> <span class="o">=</span> <span class="n">viewer</span> <span class="o">-</span> <span class="n">center</span><span class="p">;</span>
+                <span class="c1">//_VerticalBillboarding == 1 我们使用摄像机指向原点的方向作为法线方向</span>
+                <span class="c1">//_VerticalBillboarding == 0 则固定方向作为法线方向</span>
+				<span class="n">normalDir</span><span class="p">.</span><span class="n">y</span> <span class="o">=</span><span class="n">normalDir</span><span class="p">.</span><span class="n">y</span> <span class="o">*</span> <span class="n">_VerticalBillboarding</span><span class="p">;</span>
+				<span class="n">normalDir</span> <span class="o">=</span> <span class="n">normalize</span><span class="p">(</span><span class="n">normalDir</span><span class="p">);</span>
+				<span class="c1">// 获取up方向</span>
+				<span class="n">float3</span> <span class="n">upDir</span> <span class="o">=</span> <span class="n">abs</span><span class="p">(</span><span class="n">normalDir</span><span class="p">.</span><span class="n">y</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">.</span><span class="mi">999</span> <span class="o">?</span> <span class="n">float3</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">:</span> <span class="n">float3</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+                <span class="c1">//叉积后获取指向右方的向量</span>
+				<span class="n">float3</span> <span class="n">rightDir</span> <span class="o">=</span> <span class="n">normalize</span><span class="p">(</span><span class="n">cross</span><span class="p">(</span><span class="n">upDir</span><span class="p">,</span> <span class="n">normalDir</span><span class="p">));</span>
+				<span class="n">upDir</span> <span class="o">=</span> <span class="n">normalize</span><span class="p">(</span><span class="n">cross</span><span class="p">(</span><span class="n">normalDir</span><span class="p">,</span> <span class="n">rightDir</span><span class="p">));</span>
+
+				<span class="c1">// 使用3个正焦急矢量做相对于锚点旋转</span>
+				<span class="n">float3</span> <span class="n">centerOffs</span> <span class="o">=</span> <span class="n">v</span><span class="p">.</span><span class="n">vertex</span><span class="p">.</span><span class="n">xyz</span> <span class="o">-</span> <span class="n">center</span><span class="p">;</span>
+				<span class="n">float3</span> <span class="n">localPos</span> <span class="o">=</span> <span class="n">center</span> <span class="o">+</span> <span class="n">rightDir</span> <span class="o">*</span> <span class="n">centerOffs</span><span class="p">.</span><span class="n">x</span> <span class="o">+</span> <span class="n">upDir</span> <span class="o">*</span> <span class="n">centerOffs</span><span class="p">.</span><span class="n">y</span> <span class="o">+</span> <span class="n">normalDir</span> <span class="o">*</span> <span class="n">centerOffs</span><span class="p">.</span><span class="n">z</span><span class="p">;</span>
+
+				<span class="n">o</span><span class="p">.</span><span class="n">pos</span> <span class="o">=</span> <span class="n">UnityObjectToClipPos</span><span class="p">(</span><span class="n">float4</span><span class="p">(</span><span class="n">localPos</span><span class="p">,</span> <span class="mi">1</span><span class="p">));</span>
+				<span class="n">o</span><span class="p">.</span><span class="n">uv</span> <span class="o">=</span> <span class="n">TRANSFORM_TEX</span><span class="p">(</span><span class="n">v</span><span class="p">.</span><span class="n">texcoord</span><span class="p">,</span><span class="n">_MainTex</span><span class="p">);</span>
+
+				<span class="k">return</span> <span class="n">o</span><span class="p">;</span>
+			<span class="p">}</span>
+
+			<span class="n">fixed4</span> <span class="n">frag</span> <span class="p">(</span><span class="n">v2f</span> <span class="n">i</span><span class="p">)</span> <span class="o">:</span> <span class="n">SV_Target</span> <span class="p">{</span>
+				<span class="n">fixed4</span> <span class="n">c</span> <span class="o">=</span> <span class="n">tex2D</span> <span class="p">(</span><span class="n">_MainTex</span><span class="p">,</span> <span class="n">i</span><span class="p">.</span><span class="n">uv</span><span class="p">);</span>
+				<span class="n">c</span><span class="p">.</span><span class="n">rgb</span> <span class="o">*=</span> <span class="n">_Color</span><span class="p">.</span><span class="n">rgb</span><span class="p">;</span>
+
+				<span class="k">return</span> <span class="n">c</span><span class="p">;</span>
+			<span class="p">}</span>
+
+			<span class="n">ENDCG</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+	<span class="n">FallBack</span> <span class="s">"Transparent/VertexLit"</span>
+<span class="p">}</span>
+
+</pre></table></code></div></div><h2 id="对包含顶点动画的物体添加阴影"><span class="me-2">对包含顶点动画的物体添加阴影</span><a href="#对包含顶点动画的物体添加阴影" class="anchor text-muted"><i class="fas fa-hashtag"></i></a></h2><div class="language-c highlighter-rouge"><div class="code-header"> <span data-label-text="C"><i class="fas fa-code fa-fw small"></i></span> <button aria-label="copy" data-title-succeed="已复制！"><i class="far fa-clipboard"></i></button></div><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+</pre><td class="rouge-code"><pre>		<span class="n">Pass</span> <span class="p">{</span>
+            <span class="c1">//阴影投射pass</span>
+			<span class="n">Tags</span> <span class="p">{</span> <span class="s">"LightMode"</span> <span class="o">=</span> <span class="s">"ShadowCaster"</span> <span class="p">}</span>
+
+			<span class="n">CGPROGRAM</span>
+
+			<span class="cp">#pragma vertex vert
+</span>			<span class="cp">#pragma fragment frag
+</span>
+			<span class="cp">#pragma multi_compile_shadowcaster
+</span>
+			<span class="cp">#include</span> <span class="cpf">"UnityCG.cginc"</span><span class="cp">
+</span>
+			<span class="kt">float</span> <span class="n">_Magnitude</span><span class="p">;</span>
+			<span class="kt">float</span> <span class="n">_Frequency</span><span class="p">;</span>
+			<span class="kt">float</span> <span class="n">_InvWaveLength</span><span class="p">;</span>
+			<span class="kt">float</span> <span class="n">_Speed</span><span class="p">;</span>
+
+			<span class="k">struct</span> <span class="n">v2f</span> <span class="p">{</span>
+			    <span class="n">V2F_SHADOW_CASTER</span><span class="p">;</span>
+			<span class="p">};</span>
+
+			<span class="n">v2f</span> <span class="n">vert</span><span class="p">(</span><span class="n">appdata_base</span> <span class="n">v</span><span class="p">)</span> <span class="p">{</span>
+				<span class="n">v2f</span> <span class="n">o</span><span class="p">;</span>
+
+				<span class="n">float4</span> <span class="n">offset</span><span class="p">;</span>
+				<span class="n">offset</span><span class="p">.</span><span class="n">yzw</span> <span class="o">=</span> <span class="n">float3</span><span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span>
+				<span class="n">offset</span><span class="p">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">sin</span><span class="p">(</span><span class="n">_Frequency</span> <span class="o">*</span> <span class="n">_Time</span><span class="p">.</span><span class="n">y</span> <span class="o">+</span> <span class="n">v</span><span class="p">.</span><span class="n">vertex</span><span class="p">.</span><span class="n">x</span> <span class="o">*</span> <span class="n">_InvWaveLength</span> <span class="o">+</span> <span class="n">v</span><span class="p">.</span><span class="n">vertex</span><span class="p">.</span><span class="n">y</span> <span class="o">*</span> <span class="n">_InvWaveLength</span> <span class="o">+</span> <span class="n">v</span><span class="p">.</span><span class="n">vertex</span><span class="p">.</span><span class="n">z</span> <span class="o">*</span> <span class="n">_InvWaveLength</span><span class="p">)</span> <span class="o">*</span> <span class="n">_Magnitude</span><span class="p">;</span>
+				<span class="n">v</span><span class="p">.</span><span class="n">vertex</span> <span class="o">=</span> <span class="n">v</span><span class="p">.</span><span class="n">vertex</span> <span class="o">+</span> <span class="n">offset</span><span class="p">;</span>
+
+				<span class="n">TRANSFER_SHADOW_CASTER_NORMALOFFSET</span><span class="p">(</span><span class="n">o</span><span class="p">)</span>
+
+				<span class="k">return</span> <span class="n">o</span><span class="p">;</span>
+			<span class="p">}</span>
+
+			<span class="n">fixed4</span> <span class="n">frag</span><span class="p">(</span><span class="n">v2f</span> <span class="n">i</span><span class="p">)</span> <span class="o">:</span> <span class="n">SV_Target</span> <span class="p">{</span>
+			    <span class="n">SHADOW_CASTER_FRAGMENT</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+			<span class="p">}</span>
+			<span class="n">ENDCG</span>
+		<span class="p">}</span>
+</pre></table></code></div></div></div><div class="post-tail-wrapper text-muted"><div class="post-meta mb-3"> <i class="far fa-folder-open fa-fw me-1"></i> <a href="/categories/unity/">unity</a></div><div class="post-tags"> <i class="fa fa-tags fa-fw me-1"></i> <a href="/tags/shader/" class="post-tag no-text-decoration" >shader</a></div><div class=" post-tail-bottom d-flex justify-content-between align-items-center mt-5 pb-2 " ><div class="license-wrapper"> 本文由作者按照 <a href="https://creativecommons.org/licenses/by/4.0/"> CC BY 4.0 </a> 进行授权</div><div class="share-wrapper d-flex align-items-center"> <span class="share-label text-muted">分享</span> <span class="share-icons"> <a href="https://twitter.com/intent/tweet?text=shader%E5%85%A5%E9%97%A8%E5%9F%BA%E7%A1%80-%E5%8A%A8%E7%94%BB%20-%20%E6%99%93%E7%9A%84%E5%8D%9A%E5%AE%A2&url=https%3A%2F%2Flixiao90s.github.io%2Fposts%2Fshader21%2F" target="_blank" rel="noopener" data-bs-toggle="tooltip" data-bs-placement="top" title="Twitter" aria-label="Twitter"> <i class="fa-fw fa-brands fa-square-x-twitter"></i> </a> <a href="https://www.facebook.com/sharer/sharer.php?title=shader%E5%85%A5%E9%97%A8%E5%9F%BA%E7%A1%80-%E5%8A%A8%E7%94%BB%20-%20%E6%99%93%E7%9A%84%E5%8D%9A%E5%AE%A2&u=https%3A%2F%2Flixiao90s.github.io%2Fposts%2Fshader21%2F" target="_blank" rel="noopener" data-bs-toggle="tooltip" data-bs-placement="top" title="Facebook" aria-label="Facebook"> <i class="fa-fw fab fa-facebook-square"></i> </a> <a href="https://t.me/share/url?url=https%3A%2F%2Flixiao90s.github.io%2Fposts%2Fshader21%2F&text=shader%E5%85%A5%E9%97%A8%E5%9F%BA%E7%A1%80-%E5%8A%A8%E7%94%BB%20-%20%E6%99%93%E7%9A%84%E5%8D%9A%E5%AE%A2" target="_blank" rel="noopener" data-bs-toggle="tooltip" data-bs-placement="top" title="Telegram" aria-label="Telegram"> <i class="fa-fw fab fa-telegram"></i> </a> <button id="copy-link" aria-label="Copy link" class="btn small" data-bs-toggle="tooltip" data-bs-placement="top" title="分享链接" data-title-succeed="链接已复制！" > <i class="fa-fw fas fa-link pe-none fs-6"></i> </button> </span></div></div></div></article></main><aside aria-label="Panel" id="panel-wrapper" class="col-xl-3 ps-2 text-muted"><div class="access"><section id="access-lastmod"><h2 class="panel-heading">最近更新</h2><ul class="content list-unstyled ps-0 pb-1 ms-1 mt-2"><li class="text-truncate lh-lg"> <a href="/post/some-understanding-of-grain-s-official-documentation-zcic9v.html">Grain官方文档的一些理解</a><li class="text-truncate lh-lg"> <a href="/post/orleans-framework-z1wuwgn.html">Orleans框架</a><li class="text-truncate lh-lg"> <a href="/post/unity-shader-reference-document-part-4-z28zd5r.html">Unity Shader 参考文档 - 第四部分</a><li class="text-truncate lh-lg"> <a href="/post/unity-shader-reference-document-part-3-z2bufyb.html">Unity Shader 参考文档 - 第三部分</a><li class="text-truncate lh-lg"> <a href="/post/unity-shader-reference-document-part-2-zv2tg1.html">Unity Shader 参考文档 - 第二部分</a></ul></section><section><h2 class="panel-heading">热门标签</h2><div class="d-flex flex-wrap mt-3 mb-1 me-3"> <a class="post-tag btn btn-outline-primary" href="/tags/shader/">shader</a> <a class="post-tag btn btn-outline-primary" href="/tags/java/">java</a> <a class="post-tag btn btn-outline-primary" href="/tags/unity/">unity</a> <a class="post-tag btn btn-outline-primary" href="/tags/framework/">framework</a> <a class="post-tag btn btn-outline-primary" href="/tags/maven/">maven</a> <a class="post-tag btn btn-outline-primary" href="/tags/spring/">spring</a> <a class="post-tag btn btn-outline-primary" href="/tags/tree/">tree</a> <a class="post-tag btn btn-outline-primary" href="/tags/javascript/">javascript</a> <a class="post-tag btn btn-outline-primary" href="/tags/mvc/">mvc</a> <a class="post-tag btn btn-outline-primary" href="/tags/mybatis/">mybatis</a></div></section></div><div class="toc-border-cover z-3"></div><section id="toc-wrapper" class="invisible position-sticky ps-0 pe-4 pb-4"><h2 class="panel-heading ps-3 pb-2 mb-0">文章内容</h2><nav id="toc"></nav></section></aside></div><div class="row"><div id="tail-wrapper" class="col-12 col-lg-11 col-xl-9 px-md-4"><aside id="related-posts" aria-labelledby="related-label"><h3 class="mb-4" id="related-label">相关文章</h3><nav class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4 mb-4"><article class="col"> <a href="/post/unity-shader-reference-document-part-4-z28zd5r.html" class="post-preview card h-100"><div class="card-body"> <time data-ts="1753924021" data-df="YYYY/MM/DD" > 2025/07/31 </time><h4 class="pt-0 my-2">Unity Shader 参考文档 - 第四部分</h4><div class="text-muted"><p>--- ## Pipeline（渲染管线） ### 应用程序阶段（Application Stage） |阶段|描述| | ------| ---------------------------------------------------------------------------------------| |​`0.Application Stage`​|此阶段一般由CPU将...</p></div></div></a></article><article class="col"> <a href="/post/unity-shader-reference-document-part-3-z2bufyb.html" class="post-preview card h-100"><div class="card-body"> <time data-ts="1753924006" data-df="YYYY/MM/DD" > 2025/07/31 </time><h4 class="pt-0 my-2">Unity Shader 参考文档 - 第三部分</h4><div class="text-muted"><p>--- ## Pragma（编译指令） ### 基础编译指令 |指令|描述| | ------| -------------------------------------------------------------------------------------------------------------------------------------------------...</p></div></div></a></article><article class="col"> <a href="/post/unity-shader-reference-document-part-2-zv2tg1.html" class="post-preview card h-100"><div class="card-body"> <time data-ts="1753923994" data-df="YYYY/MM/DD" > 2025/07/31 </time><h4 class="pt-0 my-2">Unity Shader 参考文档 - 第二部分</h4><div class="text-muted"><p>--- ## BuildIn Variables（内置变量） ### 基础函数 |函数|描述| | ------| ------------------------------------------------------------------------------------------| |​`UNITY_INITIALIZE_OUTPUT(type,name)`​|由于HL...</p></div></div></a></article></nav></aside><nav class="post-navigation d-flex justify-content-between" aria-label="Post Navigation"> <a href="/posts/shader20/" class="btn btn-outline-primary" aria-label="上一篇" ><p>shader入门基础-复杂光照二</p></a> <a href="/posts/shader22/" class="btn btn-outline-primary" aria-label="下一篇" ><p>shader入门基础-内置变量，标签，函数，光照模型</p></a></nav><footer aria-label="Site Info" class=" d-flex flex-column justify-content-center text-muted flex-lg-row justify-content-lg-between align-items-lg-center pb-lg-3 " ><p>© <time>2025</time> <a href="https://github.com/lixiao90s">晓</a>. <span data-bs-toggle="tooltip" data-bs-placement="top" title="除非另有说明，本网站上的博客文章均由作者按照知识共享署名 4.0 国际 (CC BY 4.0) 许可协议进行授权。" >保留部分权利。</span></p><p>本站采用 <a href="https://jekyllrb.com" target="_blank" rel="noopener">Jekyll</a> 主题 <a data-bs-toggle="tooltip" data-bs-placement="top" title="v7.3.1" href="https://github.com/cotes2020/jekyll-theme-chirpy" target="_blank" rel="noopener" >Chirpy</a></p></footer></div></div><div id="search-result-wrapper" class="d-flex justify-content-center d-none"><div class="col-11 content"><div id="search-hints"><section><h2 class="panel-heading">热门标签</h2><div class="d-flex flex-wrap mt-3 mb-1 me-3"> <a class="post-tag btn btn-outline-primary" href="/tags/shader/">shader</a> <a class="post-tag btn btn-outline-primary" href="/tags/java/">java</a> <a class="post-tag btn btn-outline-primary" href="/tags/unity/">unity</a> <a class="post-tag btn btn-outline-primary" href="/tags/framework/">framework</a> <a class="post-tag btn btn-outline-primary" href="/tags/maven/">maven</a> <a class="post-tag btn btn-outline-primary" href="/tags/spring/">spring</a> <a class="post-tag btn btn-outline-primary" href="/tags/tree/">tree</a> <a class="post-tag btn btn-outline-primary" href="/tags/javascript/">javascript</a> <a class="post-tag btn btn-outline-primary" href="/tags/mvc/">mvc</a> <a class="post-tag btn btn-outline-primary" href="/tags/mybatis/">mybatis</a></div></section></div><div id="search-results" class="d-flex flex-wrap justify-content-center text-muted mt-3"></div></div></div></div><aside aria-label="Scroll to Top"> <button id="back-to-top" type="button" class="btn btn-lg btn-box-shadow"> <i class="fas fa-angle-up"></i> </button></aside></div><div id="mask" class="d-none position-fixed w-100 h-100 z-1"></div><aside id="notification" class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-animation="true" data-bs-autohide="false" ><div class="toast-header"> <button type="button" class="btn-close ms-auto" data-bs-dismiss="toast" aria-label="Close" ></button></div><div class="toast-body text-center pt-0"><p class="px-2 mb-3">发现新版本的内容。</p><button type="button" class="btn btn-primary" aria-label="Update"> 更新 </button></div></aside><script> document.addEventListener('DOMContentLoaded', () => { SimpleJekyllSearch({ searchInput: document.getElementById('search-input'), resultsContainer: document.getElementById('search-results'), json: '/assets/js/data/search.json', searchResultTemplate: '<article class="px-1 px-sm-2 px-lg-4 px-xl-0"><header><h2><a href="{url}">{title}</a></h2><div class="post-meta d-flex flex-column flex-sm-row text-muted mt-1 mb-1"> {categories} {tags}</div></header><p>{content}</p></article>', noResultsText: '<p class="mt-5">搜索结果为空</p>', templateMiddleware: function(prop, value, template) { if (prop === 'categories') { if (value === '') { return `${value}`; } else { return `<div class="me-sm-4"><i class="far fa-folder fa-fw"></i>${value}</div>`; } } if (prop === 'tags') { if (value === '') { return `${value}`; } else { return `<div><i class="fa fa-tag fa-fw"></i>${value}</div>`; } } } }); }); </script>
